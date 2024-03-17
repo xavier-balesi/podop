@@ -58,6 +58,10 @@ class Robot:
         self._action: Action = Action.WAITING_FOR_ORDER
         self._transaction_handler = transaction_handler
 
+    def _notify_transaction(self, *args, **kwargs):
+        self.action = Action.WAITING_FOR_ORDER
+        self._transaction_handler(*args, **kwargs)
+
     @property
     def action(self):
         return self._action
@@ -75,7 +79,3 @@ class Robot:
 
     def _mine_foo_callback(self):
         self._notify_transaction(Transaction(add=[Foo.build()]))
-
-    def _notify_transaction(self, *args, **kwargs):
-        self.action = Action.WAITING_FOR_ORDER
-        self._transaction_handler(*args, **kwargs)

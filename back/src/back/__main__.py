@@ -12,6 +12,19 @@ log = logging.getLogger(__name__)
 servers = []
 
 
+def cancel_all_tasks(exclude_current=False):
+    """
+    Cancel all asyncio tasks to force exiting on Ctrl+C.
+    Necessary only because of the game infinite loop.
+    TODO: find cleaner solution
+    """
+    all_tasks = asyncio.all_tasks()
+    if exclude_current:
+        all_tasks.remove(asyncio.current_task())
+    for task in all_tasks:
+        task.cancel()
+
+
 class MultiServer(Server):
     """Server listening on one port and accepting other servers in parallel."""
 
@@ -29,6 +42,7 @@ class MultiServer(Server):
     ) -> None:  # pragma: no cover (can only be called in prod)
         """Shutdown the server and notify the others."""
         self.on_shutdown()
+        cancel_all_tasks()
         return await super().shutdown(*args, **kwargs)
 
 
