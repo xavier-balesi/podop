@@ -1,0 +1,89 @@
+[project]
+name = "back"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "Thibaut Perrot", email = "phptib@gmail.com"},
+]
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn>=0.28.0",
+    "orjson>=3.9.15",
+    "websockets>=12.0",
+    "python-socketio>=5.11.1",
+]
+requires-python = "==3.12.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "flake8>=6.0.0",
+    "radon>=5.1.0",
+    "pytest-asyncio>=0.23.4",
+    "ruff>=0.3.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[tool.ruff]
+include = ["pyproject.toml", "src/**/*.py", "tests/**/*.py"]
+
+[tool.ruff.lint]
+select = ["F", "E", "W", "I", "N", "ASYNC", "A",  "T10", "T20", "PT", "Q", "RET", "SIM", "RUF"]
+ignore = [
+    "E501", # Most of the time the ruff formatter will adjust the line length, accept some exceptions like long strings.
+    "PT011", # Accept pytest.raises without asserting on the message.
+    "PT004", # Disable convertion where fixtures not returning an object have to start with an underscore.
+    "PT005", # Idem.
+    "PT023", # Accept @pytest.mark.foo without ending with "()".
+    "RET504", # It's sometimes useful add a breakpoint before the return statement to see the returned object.
+    "RUF100", # Unless using RUF100 to noqa like "noqa: R701,RUF100", the noqa is removed. It seems a bug.
+]
+
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = [
+    # Allow Pydantic's `@field_validator` decorator to trigger class method treatment.
+    "pydantic.field_validator",
+    # Allow SQLAlchemy's dynamic decorators, like `@field.expression`, to trigger class method treatment.
+    "declared_attr",
+    "expression",
+    "comparator",
+]
+
+[tool.pdm.scripts]
+check = {shell = """
+    ruff check
+    # Also check Cyclomatic Complexity and fail if >= rank D (more than moderate - more complex block).
+    # Waiting for ruff integration: https://github.com/astral-sh/ruff/issues/2418
+    flake8 --radon-show-closures --radon-no-assert --radon-max-cc 21 ./src # ./tests
+"""}
+
+format = {shell = """
+    if [ x{args} != x-f ]; then
+        if ! git diff --quiet -- '**/*.py'; then
+            echo 'Some files are not committed, use -f option to force unsafe formatting'
+            exit 1
+        fi
+    fi
+    # Using black over "ruff format" to adjective line length.
+    ruff format
+    ruff check --unsafe-fixes --fix
+"""}
+
+# A safe formatting intented to be called when saving the provided file with Ctrl+S.
+safe_format = {shell = """
+    ruff format {args}
+    ruff check --fix {args}
+"""}
+
+# For retro compatibility.
+safe_reformat = {composite = ["safe_format"]}
+
+back.cmd = "python -m back"
+#start.env_file = ".env"
+
+test = "python -m tests"
