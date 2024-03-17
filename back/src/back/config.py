@@ -25,7 +25,28 @@ class ApiConfig(CamelBaseModel):
     monitoring_port: int = 9000
 
 
+class GameConfig(CamelBaseModel):
+    """Game configuration."""
+
+    # Using ints to avoid float precision errors (using decimal module is less direct).
+    move_duration: int = 5000  # in ms
+    mine_foo_duration: int = 1000  # in ms
+    mine_bar_duration_min: int = 500  # in ms
+    mine_bar_duration_max: int = 2000  # in ms
+    forge_foobar_duration: int = 2000  # in ms
+    forge_foobar_success_rate: int = 60  # in percent
+    sell_foobar_duration: int = 10000  # in ms
+    sell_foobar_max_count: int = 5
+    money_for_foobar: int = 1  # in euros
+    buy_robot_duration: int = 0  # in ms
+    money_for_robot: int = 3  # number of euros to buy a robot
+    foo_for_robot: int = 6  # number of foo to buy a robot
+    min_robots: int = 2  # the game starts with this number of robots
+    max_robots: int = 30  # the game ends when reaching this number of robots
+
+
 class ApplicationConfig(CamelBaseModel):
     """Application configuration."""
 
     api: ApiConfig = ApiConfig()
+    game: GameConfig = GameConfig()

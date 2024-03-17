@@ -59,7 +59,7 @@ check = {shell = """
     ruff check
     # Also check Cyclomatic Complexity and fail if >= rank D (more than moderate - more complex block).
     # Waiting for ruff integration: https://github.com/astral-sh/ruff/issues/2418
-    flake8 --radon-show-closures --radon-no-assert --radon-max-cc 21 ./src # ./tests
+    flake8 --ignore E501 --radon-show-closures --radon-no-assert --radon-max-cc 21 ./src # ./tests
 """}
 
 format = {shell = """
