@@ -39,8 +39,8 @@ Ma référence avec Next.js et FastAPI: https://github.com/nullchilly/NextChess/
 1. docker-compose en local @xavier
 2. kind en local en repartant d'un script kind minimal et une charte minimale @xavier
 3. HPA horizontal pour le back basé sur CPU @xavier
-4. lier docker.com et github.com @thibaut
-5. pusher les images docker sur docker.com @xavier
+4. lier docker.com et github.com @thibaut ✅
+5. pusher les images docker sur docker.com @xavier ✅
 6. créer un compte sur https://labs.play-with-k8s.com/ @thibaut
 7. déployer sur https://labs.play-with-k8s.com/ @xavier
 8. utiliser open-telemetry: voir les logs et les traces quand CPU > 90%,
