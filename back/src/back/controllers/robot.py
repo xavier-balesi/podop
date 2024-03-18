@@ -29,22 +29,22 @@ def action_wrapper(f):
             raise RobotBusyError(
                 f"Robot {self} can't {f.__name__} because it is not waiting for an order."
             )
+
         # Robot is at the good place, no need to move.
         if self._previous_action.name.lower() == f.__name__:
             return f(self, *args, **kwargs)
+
         # The robot have to move before executing the action.
         self.action = Action.MOVING
         after_moving_ts = scheduler.ts + game_config.move_duration
-
-        @wraps(f)
-        def simulate_f_after_moving(self, *args, **kwargs):
-            orig_ts = scheduler.ts
-            scheduler.ts = after_moving_ts
-            f(self, *args, **kwargs)
-            scheduler.ts = orig_ts
-
         scheduler.schedule(
-            game_config.move_duration, simulate_f_after_moving, self, *args, **kwargs
+            game_config.move_duration,
+            # Future "child" schedules have to be executed directly after the move
+            # and not depend on future time shifting.
+            scheduler.from_timestamp_decorator(after_moving_ts)(f),
+            self,
+            *args,
+            **kwargs,
         )
         return None
 
