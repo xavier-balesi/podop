@@ -36,7 +36,7 @@ Ma référence avec Next.js et FastAPI: https://github.com/nullchilly/NextChess/
 
 ## Integration
 
-1. docker-compose en local @xavier
+1. docker-compose en local @xavier ✅
 2. kind en local en repartant d'un script kind minimal et une charte minimale @xavier
 3. HPA horizontal pour le back basé sur CPU @xavier
 4. lier docker.com et github.com @thibaut ✅
