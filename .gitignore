@@ -41,6 +41,7 @@ htmlcov/
 .tox/
 .nox/
 .coverage
+.coverage_reports/
 .coverage.*
 .cache
 nosetests.xml

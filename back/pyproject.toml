@@ -24,15 +24,26 @@ dev = [
     "radon>=5.1.0",
     "pytest-asyncio>=0.23.4",
     "ruff>=0.3.0",
+    "pytest-cov>=4.1.0",
+    "diff-cover>=8.0.3",
 ]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+addopts = """
+    --cov
+    --cov-report xml:.coverage_reports/coverage-report.xml
+    --cov-config .coveragerc
+    --cov-report html
+    --cov-report term-missing
+    --cov-fail-under 80
+"""
 
 [tool.ruff]
 include = ["pyproject.toml", "src/**/*.py", "tests/**/*.py"]
 
 [tool.ruff.lint]
+# TODO: activate pylint with "D" and see other rules with: pdm run ruff --select=ALL
 select = ["F", "E", "W", "I", "N", "ASYNC", "A",  "T10", "T20", "PT", "Q", "RET", "SIM", "RUF"]
 ignore = [
     "E501", # Most of the time the ruff formatter will adjust the line length, accept some exceptions like long strings.
@@ -83,7 +94,12 @@ safe_format = {shell = """
 # For retro compatibility.
 safe_reformat = {composite = ["safe_format"]}
 
-back.cmd = "python -m back"
-#start.env_file = ".env"
+test = {shell = """
+    python -m tests
+    # To not fail the CI pipeline when FAIL_ON_SONAR_ERROR parameter is unchecked, check the diff coverage only locally.
+    # Let Sonar handle it in the CI/CD => read comment in coverage-diff.sh to configure Sonar properly.
+    bash -c '[ -v CI ] && exit 0 || ./tools/coverage-diff.sh'
+    echo "To open the HTML report:\npython -m webbrowser -t .coverage_reports/html-coverage-report/index.html"
+"""}
 
-test = "python -m tests"
+back = "python -m back"
