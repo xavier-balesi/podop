@@ -32,7 +32,7 @@ class Player:
             if robot.action != Action.WAITING_FOR_ORDER:
                 continue
             possible_actions = [robot.mine_foo, robot.mine_bar]
-            if inventory.foos and inventory.bars:
+            if inventory.get_foo(lock=False) and inventory.get_bar(lock=False):
                 possible_actions.append(robot.forge_foobar)
             random_action = choice(possible_actions)
             random_action()

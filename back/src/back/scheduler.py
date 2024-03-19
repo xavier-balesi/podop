@@ -37,9 +37,6 @@ class Scheduler:
         ts = self.ts + delay
         self.scheduleabs(ts, action, *args, **kwargs)
 
-    # def tick(self):
-    #     self.set_timestamp(self.ts + 1)
-
     def set_timestamp(self, timestamp):
         # log.debug(f"now at {timestamp}")
         self.ts = timestamp

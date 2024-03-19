@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 
 from back import scheduler
 from back.config import ApplicationConfig, GameConfig
-from back.models.errors import InsufficientRessourceError, RobotBusyError
+from back.models.errors import RobotBusyError
 from back.models.ressources import Bar, Foo, FooBar, IncIdRessource
 from back.patterns.publish_subscribe import Provider
 
@@ -110,15 +110,11 @@ class Robot(Provider, BaseModel):
     def forge_foobar(self):
         self.action = Action.FORGE_FOOBAR
         inventory = self._inventory
-        try:
-            foo = inventory.get_foo()
-        except InsufficientRessourceError:
+        if not (foo := inventory.get_foo()):
             log.warning(f"🤖 N°{self.model.id}: not enough foo to forge a foobar")
             self.action = Action.WAITING_FOR_ORDER
             return
-        try:
-            bar = inventory.get_bar()
-        except InsufficientRessourceError:
+        if not (bar := inventory.get_bar()):
             log.warning(f"🤖 N°{self.model.id}: not enough bar to forge a foobar")
             foo.lock = False
             self.action = Action.WAITING_FOR_ORDER

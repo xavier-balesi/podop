@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 from back.config import ApplicationConfig, GameConfig
 from back.controllers.robot import Robot
-from back.models.errors import InsufficientRessourceError
 from back.models.ressources import Bar, Foo, FooBar
 from back.models.transaction import Transaction
 
@@ -39,13 +38,14 @@ class Inventory:
             Robot(inventory=self) for _ in range(game_config.min_robots)
         ]
 
-    def get_ressource(self, ressource_name) -> Foo:
+    def get_ressource(self, ressource_name, lock=True) -> Foo | None:
         ressources = getattr(self, ressource_name + "s")
         for ressource in ressources:
             if not ressource.lock:
-                ressource.lock = True
+                if lock:
+                    ressource.lock = True
                 return ressource
-        raise InsufficientRessourceError(f"no {ressource_name} in inventory")
+        return None
 
     def on_new_transaction(self, transaction: Transaction):
         for model in transaction.add:

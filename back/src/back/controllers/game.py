@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 from back import scheduler
 from back.config import ApplicationConfig, GameConfig
@@ -8,6 +9,7 @@ from back.models.inventory import Inventory
 from back.models.transaction import Transaction
 
 game_config: GameConfig = ApplicationConfig().game
+log = logging.getLogger()
 
 
 class Game:
@@ -73,7 +75,9 @@ class Game:
             await asyncio.sleep(game_config.turn_interval / 1000)
 
     def start_next_turn(self):
-        if not scheduler._tasks:
-            assert False, "There is always tasks created by former ones"  # noqa: PT015
-        # execute all tasks
-        scheduler.set_timestamp(scheduler._tasks[-1].start_ts)
+        if scheduler._tasks:
+            # execute all tasks
+            scheduler.set_timestamp(scheduler._tasks[-1].start_ts)
+        else:
+            log.critical("The game has deadlock... Aborting.")
+            self.running = False
