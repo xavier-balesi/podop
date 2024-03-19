@@ -5,7 +5,9 @@ from back import scheduler
 from back.config import ApplicationConfig, GameConfig
 from back.controllers.robot import Robot
 from back.models.errors import RobotBusyError
-from back.models.transaction import Foo, Transaction
+from back.models.inventory import Inventory
+from back.models.ressources import Foo
+from back.models.transaction import Transaction
 
 
 def test_robot_mine_foo():
@@ -15,7 +17,8 @@ def test_robot_mine_foo():
     )
 
     txn_handler = Mock()
-    robot = Robot(transaction_handler=txn_handler)
+    robot = Robot(inventory=Inventory())
+    robot.subscribe(Transaction, txn_handler)
     robot.mine_foo()
     scheduler.set_timestamp(scheduler.ts + game_config.move_duration)
 
@@ -35,7 +38,8 @@ def test_robot_chain_mine_foo():
     )
 
     txn_handler = Mock()
-    robot = Robot(transaction_handler=txn_handler)
+    robot = Robot(inventory=Inventory())
+    robot.subscribe(Transaction, txn_handler)
     robot.mine_foo()
     scheduler.jump(game_config.move_duration - 1)
 

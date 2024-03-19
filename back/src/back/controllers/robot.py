@@ -2,15 +2,20 @@ import logging
 from enum import StrEnum, auto
 from functools import wraps
 from random import randint
-from typing import Callable
+from typing import TYPE_CHECKING, Literal
+
+from pydantic import BaseModel, Field
 
 from back import scheduler
 from back.config import ApplicationConfig, GameConfig
-from back.models.errors import RobotBusyError
-from back.models.transaction import Bar, Foo, RobotModel, Transaction
+from back.models.errors import InsufficientRessourceError, RobotBusyError
+from back.models.ressources import Bar, Foo, FooBar, IncIdRessource
+from back.patterns.publish_subscribe import Provider
 
 log = logging.getLogger(__name__)
 game_config: GameConfig = ApplicationConfig().game
+if TYPE_CHECKING:
+    from back.models.inventory import Inventory
 
 
 class Action(StrEnum):
@@ -32,7 +37,7 @@ def action_wrapper(f):
             )
 
         # Robot is at the good place, no need to move.
-        if self._previous_action.name.lower() == f.__name__:
+        if self.previous_action.name.lower() == f.__name__:
             return f(self, *args, **kwargs)
 
         # The robot have to move before executing the action.
@@ -52,16 +57,25 @@ def action_wrapper(f):
     return _action_wrapper
 
 
-class Robot:
-    def __init__(self, transaction_handler: Callable[[Transaction], None]):
-        self._model: RobotModel = RobotModel.build()
-        self._previous_action: Action = Action.WAITING_FOR_ORDER
+class RobotModel(IncIdRessource):
+    type: Literal["robot"] = "robot"
+
+
+class Robot(Provider, BaseModel):
+    type: Literal["robot"] = "robot"
+    model: RobotModel = Field(default_factory=RobotModel.build)
+    previous_action: Action = Field(default=Action.WAITING_FOR_ORDER, exclude=True)
+
+    def __init__(self, inventory: "Inventory"):
+        super().__init__()
+        self._inventory = inventory
         self._action: Action = Action.WAITING_FOR_ORDER
-        self._transaction_handler = transaction_handler
 
     def _notify_transaction(self, *args, **kwargs):
+        from back.models.transaction import Transaction
+
         self.action = Action.WAITING_FOR_ORDER
-        self._transaction_handler(*args, **kwargs)
+        self._publish(Transaction(*args, **kwargs))
 
     @property
     def action(self):
@@ -69,9 +83,9 @@ class Robot:
 
     @action.setter
     def action(self, value):
-        self._previous_action = self._action
+        self.previous_action = self._action
         self._action = value
-        log.debug(f"🤖 N°{self._model.id}: {self._previous_action} -> {self._action}")
+        log.debug(f"🤖 N°{self.model.id}: {self.previous_action} -> {self._action}")
 
     @action_wrapper
     def mine_foo(self):
@@ -79,7 +93,7 @@ class Robot:
         scheduler.schedule(game_config.mine_foo_duration, self._mine_foo_callback)
 
     def _mine_foo_callback(self):
-        self._notify_transaction(Transaction(add=[Foo.build()]))
+        self._notify_transaction(add=[Foo.build()])
 
     @action_wrapper
     def mine_bar(self):
@@ -90,4 +104,39 @@ class Robot:
         scheduler.schedule(mine_bar_duration, self._mine_bar_callback)
 
     def _mine_bar_callback(self):
-        self._notify_transaction(Transaction(add=[Bar.build()]))
+        self._notify_transaction(add=[Bar.build()])
+
+    @action_wrapper
+    def forge_foobar(self):
+        self.action = Action.FORGE_FOOBAR
+        inventory = self._inventory
+        try:
+            foo = inventory.get_foo()
+        except InsufficientRessourceError:
+            log.warning(f"🤖 N°{self.model.id}: not enough foo to forge a foobar")
+            self.action = Action.WAITING_FOR_ORDER
+            return
+        try:
+            bar = inventory.get_bar()
+        except InsufficientRessourceError:
+            log.warning(f"🤖 N°{self.model.id}: not enough bar to forge a foobar")
+            foo.lock = False
+            self.action = Action.WAITING_FOR_ORDER
+            return
+
+        scheduler.schedule(
+            game_config.forge_foobar_duration,
+            self._forge_foobar_callback,
+            foo=foo,
+            bar=bar,
+        )
+
+    def _forge_foobar_callback(self, foo, bar):
+        random = randint(1, 100)
+        if random <= game_config.forge_foobar_success_rate:
+            self._notify_transaction(
+                add=[FooBar.build(foo_id=foo.id, bar_id=bar.id)], remove=[foo, bar]
+            )
+        else:
+            self._notify_transaction(remove=[foo])
+            bar.lock = False

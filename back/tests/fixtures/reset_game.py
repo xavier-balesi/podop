@@ -1,6 +1,7 @@
 import pytest
 from back import scheduler
-from back.models.transaction import Bar, Foo, RobotModel
+from back.controllers.robot import RobotModel
+from back.models.ressources import Bar, Foo
 
 
 @pytest.fixture(autouse=True)

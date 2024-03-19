@@ -1,3 +1,4 @@
+from random import choice
 from typing import TYPE_CHECKING
 
 from back.controllers.robot import Action
@@ -26,12 +27,12 @@ class Player:
 
     def trade_in_live(self):
         """Play each time the game changes."""
-        for robot in self._game._robots[::2]:
+        inventory = self._game._inventory
+        for robot in inventory.robots:
             if robot.action != Action.WAITING_FOR_ORDER:
                 continue
-            robot.mine_foo()
-
-        for robot in self._game._robots[1::2]:
-            if robot.action != Action.WAITING_FOR_ORDER:
-                continue
-            robot.mine_bar()
+            possible_actions = [robot.mine_foo, robot.mine_bar]
+            if inventory.foos and inventory.bars:
+                possible_actions.append(robot.forge_foobar)
+            random_action = choice(possible_actions)
+            random_action()
