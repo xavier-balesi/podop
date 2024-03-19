@@ -35,7 +35,7 @@ class Inventory:
         self.bars: list[Bar] = []
         self.foobars: list[FooBar] = []
         self.robots: list[Robot] = [
-            Robot(inventory=self) for _ in range(game_config.min_robots)
+            Robot.build(inventory=self) for _ in range(game_config.min_robots)
         ]
 
     def get_ressource(self, ressource_name, lock=True) -> Foo | None:

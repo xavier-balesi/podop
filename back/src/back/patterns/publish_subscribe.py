@@ -11,8 +11,8 @@ if TYPE_CHECKING:
 class Provider:
     """Implementation of the Publish-Subscribe conversation pattern."""
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._observers: dict[
             type("EventType"), list[Callable[["EventType"], None]]
         ] = defaultdict(list)

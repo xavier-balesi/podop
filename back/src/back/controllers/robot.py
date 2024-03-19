@@ -4,7 +4,7 @@ from functools import wraps
 from random import randint
 from typing import TYPE_CHECKING, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from back import scheduler
 from back.config import ApplicationConfig, GameConfig
@@ -57,17 +57,12 @@ def action_wrapper(f):
     return _action_wrapper
 
 
-class RobotModel(IncIdRessource):
+class Robot(Provider, IncIdRessource):
     type: Literal["robot"] = "robot"
-
-
-class Robot(Provider, BaseModel):
-    type: Literal["robot"] = "robot"
-    model: RobotModel = Field(default_factory=RobotModel.build)
     previous_action: Action = Field(default=Action.WAITING_FOR_ORDER, exclude=True)
 
-    def __init__(self, inventory: "Inventory"):
-        super().__init__()
+    def __init__(self, inventory: "Inventory", *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._inventory = inventory
         self._action: Action = Action.WAITING_FOR_ORDER
 
@@ -85,7 +80,7 @@ class Robot(Provider, BaseModel):
     def action(self, value):
         self.previous_action = self._action
         self._action = value
-        log.debug(f"🤖 N°{self.model.id}: {self.previous_action} -> {self._action}")
+        log.debug(f"🤖 N°{self.id}: {self.previous_action} -> {self._action}")
 
     @action_wrapper
     def mine_foo(self):
@@ -111,11 +106,11 @@ class Robot(Provider, BaseModel):
         self.action = Action.FORGE_FOOBAR
         inventory = self._inventory
         if not (foo := inventory.get_foo()):
-            log.warning(f"🤖 N°{self.model.id}: not enough foo to forge a foobar")
+            log.warning(f"🤖 N°{self.id}: not enough foo to forge a foobar")
             self.action = Action.WAITING_FOR_ORDER
             return
         if not (bar := inventory.get_bar()):
-            log.warning(f"🤖 N°{self.model.id}: not enough bar to forge a foobar")
+            log.warning(f"🤖 N°{self.id}: not enough bar to forge a foobar")
             foo.lock = False
             self.action = Action.WAITING_FOR_ORDER
             return

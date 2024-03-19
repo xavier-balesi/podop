@@ -17,7 +17,7 @@ def test_robot_mine_foo():
     )
 
     txn_handler = Mock()
-    robot = Robot(inventory=Inventory())
+    robot = Robot.build(inventory=Inventory())
     robot.subscribe(Transaction, txn_handler)
     robot.mine_foo()
     scheduler.set_timestamp(scheduler.ts + game_config.move_duration)
@@ -38,7 +38,7 @@ def test_robot_chain_mine_foo():
     )
 
     txn_handler = Mock()
-    robot = Robot(inventory=Inventory())
+    robot = Robot.build(inventory=Inventory())
     robot.subscribe(Transaction, txn_handler)
     robot.mine_foo()
     scheduler.jump(game_config.move_duration - 1)
