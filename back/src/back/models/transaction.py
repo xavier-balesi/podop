@@ -43,7 +43,7 @@ class RobotModel(IncIdRessource):
 
 
 Ressource = Annotated[
-    Foo | Bar,
+    RobotModel | Foo | Bar,
     Field(..., discriminator="type"),
 ]
 

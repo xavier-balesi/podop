@@ -1,12 +1,13 @@
 import logging
 from enum import StrEnum, auto
 from functools import wraps
+from random import randint
 from typing import Callable
 
 from back import scheduler
 from back.config import ApplicationConfig, GameConfig
 from back.models.errors import RobotBusyError
-from back.models.transaction import Foo, RobotModel, Transaction
+from back.models.transaction import Bar, Foo, RobotModel, Transaction
 
 log = logging.getLogger(__name__)
 game_config: GameConfig = ApplicationConfig().game
@@ -79,3 +80,14 @@ class Robot:
 
     def _mine_foo_callback(self):
         self._notify_transaction(Transaction(add=[Foo.build()]))
+
+    @action_wrapper
+    def mine_bar(self):
+        self.action = Action.MINE_BAR
+        mine_bar_duration = randint(
+            game_config.mine_bar_duration_min, game_config.mine_bar_duration_max
+        )
+        scheduler.schedule(mine_bar_duration, self._mine_bar_callback)
+
+    def _mine_bar_callback(self):
+        self._notify_transaction(Transaction(add=[Bar.build()]))

@@ -1,9 +1,17 @@
 import logging
 from contextlib import contextmanager
+from dataclasses import dataclass, field
 from functools import partial, wraps
 from heapq import heappop, heappush
+from typing import Callable
 
 log = logging.getLogger(__name__)
+
+
+@dataclass(order=True)
+class Task:
+    start_ts: int  # in ms
+    action: Callable[[], None] = field(compare=False)
 
 
 class Scheduler:
@@ -20,7 +28,7 @@ class Scheduler:
 
     def scheduleabs(self, timestamp, action, *args, **kwargs):
         simplified_action = partial(action, *args, **kwargs)
-        heappush(self._tasks, (timestamp, simplified_action))
+        heappush(self._tasks, Task(start_ts=timestamp, action=simplified_action))
         log.debug(
             f"scheduling at {timestamp} action {action} with args={args} and kwargs={kwargs}"
         )
@@ -33,12 +41,12 @@ class Scheduler:
     #     self.set_timestamp(self.ts + 1)
 
     def set_timestamp(self, timestamp):
-        log.debug(f"now at {timestamp}")
+        # log.debug(f"now at {timestamp}")
         self.ts = timestamp
-        while self._tasks and (action_ts := self._tasks[0][0]) <= self.ts:
+        while self._tasks and (action_ts := self._tasks[0].start_ts) <= self.ts:
             log.debug(f"executing action planned for {action_ts}")
-            _, action = heappop(self._tasks)
-            action()
+            task: Task = heappop(self._tasks)
+            task.action()
 
     def jump(self, delay):
         ts = self.ts + delay
