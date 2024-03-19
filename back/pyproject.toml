@@ -95,7 +95,7 @@ safe_format = {shell = """
 safe_reformat = {composite = ["safe_format"]}
 
 test = {shell = """
-    python -m tests
+    python -m tests {args}
     # To not fail the CI pipeline when FAIL_ON_SONAR_ERROR parameter is unchecked, check the diff coverage only locally.
     # Let Sonar handle it in the CI/CD => read comment in coverage-diff.sh to configure Sonar properly.
     bash -c '[ -v CI ] && exit 0 || ./tools/coverage-diff.sh'

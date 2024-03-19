@@ -4,12 +4,12 @@ from functools import wraps
 from random import randint
 from typing import TYPE_CHECKING, Literal
 
-from pydantic import Field
+from pydantic import Field, PrivateAttr
 
 from back import scheduler
 from back.config import ApplicationConfig, GameConfig
 from back.models.errors import RobotBusyError, SellError
-from back.models.ressources import Bar, Foo, FooBar, IncIdRessource, Money
+from back.models.ressources import Bar, Foo, FooBar, IncrIdRessource, Money
 from back.patterns.publish_subscribe import Provider
 
 log = logging.getLogger(__name__)
@@ -57,9 +57,10 @@ def action_wrapper(f):
     return _action_wrapper
 
 
-class Robot(Provider, IncIdRessource):
+class Robot(Provider, IncrIdRessource):
     type: Literal["robot"] = "robot"
     previous_action: Action = Field(default=Action.WAITING_FOR_ORDER, exclude=True)
+    _inventory: "Inventory" = PrivateAttr()
 
     def __init__(self, inventory: "Inventory", *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -159,3 +160,30 @@ class Robot(Provider, IncIdRessource):
             add=[Money(value=game_config.money_for_foobar * len(foobars))],
             remove=foobars,
         )
+
+    @action_wrapper
+    def buy_robot(self):
+        self.action = Action.SELL_FOOBAR
+        inventory = self._inventory
+        log.debug(f"sell_foobar while {inventory}")
+        if inventory.money >= game_config.money_for_robot and (
+            foos := inventory.get_foos(count=game_config.foo_for_robot)
+        ):
+            # Thankfully the transactions using money is not delay, so we don't have to lock the money.
+            self._notify_transaction(
+                add=[Robot.build(inventory=inventory)],
+                remove=[Money(value=game_config.money_for_robot), *foos],
+            )
+        else:
+            if inventory.money < game_config.money_for_robot:
+                log.warning(
+                    f"🤖 N°{self.id}: not enough money to buy a robot: {inventory.money}/{game_config.money_for_robot}"
+                )
+            else:
+                log.warning(
+                    f"🤖 N°{self.id}: not enough foos to buy a robot: {len(foos)}/{game_config.foo_for_robot}"
+                )
+            for foo in foos:
+                foo.lock = False
+            self.action = Action.WAITING_FOR_ORDER
+            return

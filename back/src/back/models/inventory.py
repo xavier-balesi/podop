@@ -3,7 +3,7 @@ from functools import partial
 from back.config import ApplicationConfig, GameConfig
 from back.controllers.robot import Robot
 from back.models.ressources import Bar, Foo, FooBar, Money
-from back.models.transaction import Transaction
+from back.models.transaction import IncrIdRessources, Transaction
 
 game_config: GameConfig = ApplicationConfig().game
 
@@ -16,11 +16,17 @@ class Inventory:
 
     def __init__(self):
         # Complete class methods.
-        for ressource_name in ("foo", "bar", "foobar", "robot"):
+        for ressource_name in IncrIdRessources.__args__:
+            ressource_name = ressource_name.__name__.lower()
             setattr(
                 self,
                 "get_" + ressource_name,
                 partial(self.get_ressource, ressource_name),
+            )
+            setattr(
+                self,
+                f"get_{ressource_name}s",
+                partial(self.get_ressources, ressource_name),
             )
 
         # Populate the inventory with default values.
@@ -35,7 +41,9 @@ class Inventory:
     def __str__(self):
         return f"Inventory(foos={len(self.foos)}, bars={len(self.bars)}, foobars={len(self.foobars)}, robots={len(self.robots)}, money={self.money.value})"
 
-    def get_ressource(self, ressource_name, lock=True) -> Foo | None:
+    def get_ressource(
+        self, ressource_name: IncrIdRessources, lock: bool = True
+    ) -> IncrIdRessources | None:
         ressources = getattr(self, ressource_name + "s")
         for ressource in ressources:
             if ressource.lock:
@@ -45,24 +53,27 @@ class Inventory:
             return ressource
         return None
 
-    def get_foobars(self, count, lock=True) -> list[FooBar]:
-        foobars = []
-        for foobar in self.foobars:
-            if foobar.lock:
+    def get_ressources(
+        self, ressource_name: IncrIdRessources, count: int, lock=True
+    ) -> list[IncrIdRessources]:
+        returned_ressources = []
+        ressources = getattr(self, ressource_name + "s")
+        for ressource in ressources:
+            if ressource.lock:
                 continue
             if lock:
-                foobar.lock = True
-            foobars.append(foobar)
-            if len(foobars) == count:
+                ressource.lock = True
+            returned_ressources.append(ressource)
+            if len(returned_ressources) == count:
                 break
 
         # Revert the lock when the count is not there.
-        if len(foobars) != count:
-            for foobar in foobars:
-                foobar.lock = False
+        if len(returned_ressources) != count:
+            for ressource in returned_ressources:
+                ressource.lock = False
             return []
 
-        return foobars
+        return returned_ressources
 
     def on_new_transaction(self, transaction: Transaction):
         for model in transaction.add:

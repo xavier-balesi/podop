@@ -59,6 +59,12 @@ class RandomStrategyPlayer(Player):
             if inventory.get_foobars(count=sell_count, lock=False):
                 possible_actions.append(partial(robot.sell_foobar, count=sell_count))
 
+            # Can we buy a robot?
+            if inventory.money >= game_config.money_for_robot and inventory.get_foos(
+                count=game_config.foo_for_robot, lock=False
+            ):
+                possible_actions.append(robot.buy_robot)
+
             # Choose a random action that respect game rules.
             random_action = choice(possible_actions)
             log.debug(f"player choose {random_action} while {self._game.get_stats()}")

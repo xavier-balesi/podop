@@ -15,16 +15,6 @@ app = FastAPI()
 api_config: ApiConfig = ApplicationConfig().api
 
 
-# sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],  # Vous pouvez ajuster ceci selon vos besoins
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-
-
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     log.info("Client connected")
@@ -35,7 +25,7 @@ async def websocket_endpoint(websocket: WebSocket):
         try:
             while game.running:
                 await asyncio.sleep(1 / api_config.framerate)
-                # using a websocket to eventually pilot the trading strategy manually from the web client
+                # Using a websocket to eventually pilot the trading strategy manually from the web client.
                 await websocket.send_text(
                     orjson.dumps(game.get_stats()).decode("utf-8")
                 )
@@ -43,13 +33,3 @@ async def websocket_endpoint(websocket: WebSocket):
             log.warning(f"Client disconnected: {e!r}", exc_info=True)
 
     await asyncio.gather(game.run(), notify_front())
-
-
-# @sio.on("sio")
-# async def puzzle_duel(sid, msg):
-#     print("connect", sid)
-#     data = orjson.loads(msg)
-#     print(data)
-#
-#
-# app.mount("/", socketio.ASGIApp(sio))

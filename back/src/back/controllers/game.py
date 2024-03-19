@@ -26,9 +26,8 @@ class Game:
         self._transactions = [
             Transaction(add=[robot for robot in self._inventory.robots])
         ]
-        # for txn in self._transactions:
-        #     self.on_new_transaction(txn)
 
+        # Observe initial robots.
         for robot in self._inventory.robots:
             robot.subscribe(Transaction, self.on_new_transaction)
 
@@ -49,7 +48,7 @@ class Game:
         self._inventory.on_new_transaction(transaction)
 
         # Eventually stop the game.
-        if len(self._inventory.foos) >= 10000:
+        if len(self._inventory.robots) >= game_config.max_robots:
             self.running = False
             return
 
@@ -80,8 +79,8 @@ class Game:
 
     def start_next_turn(self):
         if scheduler._tasks:
-            # execute all tasks
+            # Execute all tasks by jumping to the last task timestamp.
             scheduler.set_timestamp(scheduler._tasks[-1].start_ts)
         else:
-            log.critical("The game has deadlock... Aborting.")
+            log.critical("⛔ The game has deadlock... Aborting.")
             self.running = False

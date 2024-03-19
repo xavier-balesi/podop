@@ -8,17 +8,21 @@
 
 ## Back
 
-1. finir l'implémentation de l'énoncé
-2. tests auto (unit, integration, leak, performance), code coverage
-3. gestions des logs (faux temps en log context), est-ce qu'il faut open-telemetry ou un logger maison ?
-4. documentation (code, archi): sphinx buildé sur Github pages
-5. setup CQRS using Event Sourcing for better write performance and launch more games
+1. finir l'implémentation de l'énoncé ✅
+2. code coverage ✅
+3. tests auto (unit, integration, leak, performance de plusieurs stratégies de joueur, avec et sans stockage)
+   => à faire qd je serai sûr que c'est le bon test
+4. gestions des logs (faux temps en log context), est-ce qu'il faut open-telemetry ou un logger maison ?
+5. documentation (code, archi): sphinx buildé sur Github pages
+6. setup CQRS using Event Sourcing for better write performance and launch more games
    1. Is kafka have better throughput than other database ? Better for write store ?
+      Les Transactions seront utiles pour les graphs et il nous faut une BDD pour l'exploration 
+      => abandonner un Redis (on peut perdre 1s de donnée en plus) ou Kafka en intermédiaire.
    2. Create another microservice that build materialized view
    3. Add a route for requesting the materialized view to display graph in the frontend or do the route just return the raws events ? Utiliser GraphQL.
-6. Est-ce que je peux optimiser une partie du code avec Numba ou Rust/pyo3/maturin ? Intégration maison possible ou impossible avec pdm ?
-7. apprentissage par renforcement en donnant les règles comme AlphaZero (reinforcement learning)
-8. use simpler trading ML methods: https://ml4trading.io/
+7. Est-ce que je peux optimiser une partie du code avec Numba ou Rust/pyo3/maturin ? Intégration maison possible ou impossible avec pdm ?
+8. apprentissage par renforcement en donnant les règles comme AlphaZero (reinforcement learning)
+9. use simpler trading ML methods: https://ml4trading.io/
 
 
 ## Front
@@ -29,10 +33,11 @@ Ma référence avec Next.js et FastAPI: https://github.com/nullchilly/NextChess/
 2. Build static du site pour être déployable sur github pages ou sur un simple Nginx dans Kub ou utilisé le server par défaut de Node.js ?
 3. Faire des graphes d'historique des données préssenties comme utile pour le trading
 4. Influencer la partie depuis le front ?
-   1. choix de la stratégie/modèle implémenté par le back ?
-   2. on joue sur des paramètres simples du modèle ?
-   3. donner des ordres simples pour piloter les robots avant de commencer la partie ou pendant la partie
-   4. création de nouveaux modèles avec du code python éxécuté côté back ?
+   1. accélérer le temps du jeu après le lancement
+   2. choix de la stratégie/modèle implémenté par le back ?
+   3. on joue sur des paramètres simples du modèle ?
+   4. donner des ordres simples pour piloter les robots avant de commencer la partie ou pendant la partie
+   5. création de nouveaux modèles avec du code python éxécuté côté back ?
 
 ## Integration
 
@@ -41,7 +46,7 @@ Ma référence avec Next.js et FastAPI: https://github.com/nullchilly/NextChess/
 3. HPA horizontal pour le back basé sur CPU @xavier
 4. lier docker.com et github.com @thibaut ✅
 5. pusher les images docker sur docker.com @xavier ✅
-6. créer un compte sur https://labs.play-with-k8s.com/ @thibaut
+6. créer un compte sur https://labs.play-with-k8s.com/ @thibaut ✅
 7. déployer sur https://labs.play-with-k8s.com/ @xavier
 8. utiliser open-telemetry: voir les logs et les traces quand CPU > 90%,
    est-ce qu'il faut Grafana pour faire l'aggrégation des logs, traces et metrics @xavier
