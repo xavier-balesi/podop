@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 from back import scheduler
 from back.controllers.robot import Robot
-from back.models.ressources import Bar, Foo, FooBar
+from back.models.ressources import Bar, Foo, FooBar, Money
 
 # Model = TypeVar("Model", bound=BaseModel)
 
@@ -19,7 +19,7 @@ from back.models.ressources import Bar, Foo, FooBar
 
 
 InventoryModel = Annotated[
-    Robot | Foo | Bar | FooBar,
+    Robot | Foo | Bar | FooBar | Money,
     Field(..., discriminator="type"),
 ]
 

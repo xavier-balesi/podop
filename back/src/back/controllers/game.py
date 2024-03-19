@@ -3,7 +3,7 @@ import logging
 
 from back import scheduler
 from back.config import ApplicationConfig, GameConfig
-from back.controllers.player import Player
+from back.controllers.player import RandomStrategyPlayer
 from back.controllers.robot import Robot
 from back.models.inventory import Inventory
 from back.models.transaction import Transaction
@@ -13,8 +13,10 @@ log = logging.getLogger()
 
 
 class Game:
+    __slots__ = ["_player", "_inventory", "running", "_transactions"]
+
     def __init__(self):
-        self._player = Player(game=self)
+        self._player = RandomStrategyPlayer(game=self)
         self._inventory = Inventory()
         self.running: bool = True
 
@@ -61,6 +63,8 @@ class Game:
             "bar": len(inventory.bars),
             "foobar": len(inventory.foobars),
             "robot": len(inventory.robots),
+            "money": inventory.money.value,
+            "ts": scheduler.ts,
             "transaction": len(self._transactions),
         }
 

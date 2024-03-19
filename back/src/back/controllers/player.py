@@ -1,14 +1,29 @@
-from random import choice
+import logging
+from functools import partial
+from random import choice, randint
 from typing import TYPE_CHECKING
 
+from back.config import ApplicationConfig, GameConfig
 from back.controllers.robot import Action
 
 if TYPE_CHECKING:
     from back.controllers.game import Game
 
+game_config: GameConfig = ApplicationConfig().game
+log = logging.getLogger(__name__)
+
 
 class Player:
     """Mining gamer or trader, that is the question."""
+
+
+class RandomStrategyPlayer(Player):
+    """
+    Player that plays randomly.
+    Many random games might help finding good strategies.
+    """
+
+    __slots__ = ["_game"]
 
     def __init__(self, game: "Game"):
         self._game = game
@@ -31,8 +46,20 @@ class Player:
         for robot in inventory.robots:
             if robot.action != Action.WAITING_FOR_ORDER:
                 continue
+
+            # It's always possible to mine foo or bar.
             possible_actions = [robot.mine_foo, robot.mine_bar]
+
+            # Can we forge a foobar?
             if inventory.get_foo(lock=False) and inventory.get_bar(lock=False):
                 possible_actions.append(robot.forge_foobar)
+
+            # Can we sell a random count of foobar?
+            sell_count = randint(1, game_config.sell_foobar_max_count)
+            if inventory.get_foobars(count=sell_count, lock=False):
+                possible_actions.append(partial(robot.sell_foobar, count=sell_count))
+
+            # Choose a random action that respect game rules.
             random_action = choice(possible_actions)
+            log.debug(f"player choose {random_action} while {self._game.get_stats()}")
             random_action()

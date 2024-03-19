@@ -8,8 +8,8 @@ from pydantic import Field
 
 from back import scheduler
 from back.config import ApplicationConfig, GameConfig
-from back.models.errors import RobotBusyError
-from back.models.ressources import Bar, Foo, FooBar, IncIdRessource
+from back.models.errors import RobotBusyError, SellError
+from back.models.ressources import Bar, Foo, FooBar, IncIdRessource, Money
 from back.patterns.publish_subscribe import Provider
 
 log = logging.getLogger(__name__)
@@ -131,3 +131,31 @@ class Robot(Provider, IncIdRessource):
         else:
             self._notify_transaction(remove=[foo])
             bar.lock = False
+
+    @action_wrapper
+    def sell_foobar(self, count):
+        if not 1 <= count <= game_config.sell_foobar_max_count:
+            raise SellError(
+                f"🤖 N°{self.id}: count must be between 1 and {game_config.sell_foobar_max_count}"
+            )
+        self.action = Action.SELL_FOOBAR
+        inventory = self._inventory
+        log.debug(f"sell_foobar while {inventory}")
+        if not (foobars := inventory.get_foobars(count=count)):
+            log.warning(
+                f"🤖 N°{self.id}: not enough foobar to sell: {len(foobars)}/{count}"
+            )
+            self.action = Action.WAITING_FOR_ORDER
+            return
+
+        scheduler.schedule(
+            game_config.sell_foobar_duration,
+            self._sell_foobar_callback,
+            foobars=foobars,
+        )
+
+    def _sell_foobar_callback(self, foobars):
+        self._notify_transaction(
+            add=[Money(value=game_config.money_for_foobar * len(foobars))],
+            remove=foobars,
+        )

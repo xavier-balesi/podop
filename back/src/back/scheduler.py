@@ -21,6 +21,8 @@ class Scheduler:
     trading model (using algorithms or machine learning), and the more parties we run, the better.
     """
 
+    __slots__ = ["ts", "_tasks"]
+
     def __init__(self):
         self.ts = 0
         # heapq is not thread safe and then, more optimal than synchronisation queues (sync or async)
