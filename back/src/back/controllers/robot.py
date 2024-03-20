@@ -183,7 +183,7 @@ class Robot(Provider, IncrIdRessource):
                 log.warning(
                     f"🤖 N°{self.id}: not enough foos to buy a robot: {len(foos)}/{game_config.foo_for_robot}"
                 )
-            for foo in foos:
-                foo.lock = False
+                for foo in foos:
+                    foo.lock = False
             self.action = Action.WAITING_FOR_ORDER
             return
