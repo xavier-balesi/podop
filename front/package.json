@@ -6,9 +6,11 @@
     "start": "next start"
   },
   "dependencies": {
+    "highcharts": "^11.4.0",
+    "highcharts-react-official": "^3.2.1",
     "next": "latest",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "^18.2.0"
   },
   "engines": {
     "node": ">=18"

@@ -46,7 +46,8 @@ class GameConfig(CamelBaseModel):
     foo_for_robot: int = 6  # number of foo to buy a robot
     min_robots: int = 2  # the game starts with this number of robots
     max_robots: int = 30  # the game ends when reaching this number of robots
-    turn_interval: int = 0  # interval between turns in ms
+    # TODO: reset turn_interval to 0
+    turn_interval: int = 20  # interval between turns in ms
     turn_duration: int = (
         10  # duration of one turn in ms, the scheduler jump with this duration
     )
