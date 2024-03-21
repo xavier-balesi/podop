@@ -5,6 +5,8 @@ from back import scheduler
 from back.config import ApplicationConfig, GameConfig
 from back.controllers.player import RandomStrategyPlayer
 from back.controllers.robot import Robot
+from back.controllers.transaction_analyser_mixin import TransactionAnalyserMixin
+from back.controllers.transaction_listener import TransactionListener
 from back.models.inventory import Inventory
 from back.models.transaction import Transaction
 
@@ -12,10 +14,11 @@ game_config: GameConfig = ApplicationConfig().game
 log = logging.getLogger()
 
 
-class Game:
+class Game(TransactionAnalyserMixin, TransactionListener):
     __slots__ = ["_player", "_inventory", "running", "_transactions"]
 
     def __init__(self):
+        super().__init__()
         self._player = RandomStrategyPlayer(game=self)
         self._inventory = Inventory()
         self.running: bool = True
@@ -26,12 +29,14 @@ class Game:
         self._transactions = [
             Transaction(add=[robot for robot in self._inventory.robots])
         ]
+        super().on_new_transaction(self._transactions[0])
 
         # Observe initial robots.
         for robot in self._inventory.robots:
             robot.subscribe(Transaction, self.on_new_transaction)
 
-    def on_new_transaction(self, transaction: Transaction):
+    def on_new_transaction(self, transaction: Transaction) -> None:
+        super().on_new_transaction(transaction)
         self._transactions.append(transaction)
 
         # Observe new robots.
@@ -55,7 +60,7 @@ class Game:
         # Once the inventory is updated, propose to the player to play, make orders.
         self._player.trade_in_live()
 
-    def get_stats(self):
+    def get_counts(self):
         inventory = self._inventory
         return {
             "foo": len(inventory.foos),

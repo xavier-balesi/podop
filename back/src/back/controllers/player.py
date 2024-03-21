@@ -67,5 +67,5 @@ class RandomStrategyPlayer(Player):
 
             # Choose a random action that respect game rules.
             random_action = choice(possible_actions)
-            log.debug(f"player choose {random_action} while {self._game.get_stats()}")
+            log.debug(f"player choose {random_action} while {self._game.get_counts()}")
             random_action()

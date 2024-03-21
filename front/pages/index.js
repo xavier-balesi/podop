@@ -12,10 +12,10 @@ const IndexPage = () => {
         // };
 
         ws.onmessage = e => {
-            const point = JSON.parse(e.data);
-            console.log("mess: ", point);
+            const countsHistory = JSON.parse(e.data);
+            console.log("ws input: ", countsHistory);
             // setTransactions(point)
-            chartRef.current.addTransactions(point)
+            chartRef.current.addCountsHistory(countsHistory)
         };
 
         //clean up function when we close page

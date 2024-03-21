@@ -22,3 +22,7 @@ class Transaction(BaseModel):
         if "ts" not in kwargs:
             kwargs["ts"] = scheduler.ts
         super().__init__(**kwargs)
+
+
+class Transactions(BaseModel):
+    transactions: list[Transaction]

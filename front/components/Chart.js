@@ -14,9 +14,16 @@ const Chart = forwardRef(function Chart(props, ref) {
     const chartRef = useRef();
     useImperativeHandle(ref, () => {
         return {
-            addTransactions: (transactions) => {
+            addCountsHistory: (countsHistory) => {
                 if (chartRef.current) {
-                    chartRef.current.chart.series[0].addPoint([transactions.ts, transactions.foo], true);
+                    const chart = chartRef.current.chart
+                    const points = countsHistory.map(counts => [counts.ts, counts.foo]);
+                    for (let point of  points) {
+                        chart.series[0].addPoint(point);
+                    }
+                    chart.redraw()
+                    // NB: In case we need to update all points in the future:
+                    // https://api.highcharts.com/class-reference/Highcharts.Series.html#setData
                 }
             }
         }
