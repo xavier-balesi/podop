@@ -1,4 +1,4 @@
-import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from 'react';
+import React, {forwardRef, useImperativeHandle, useRef} from 'react';
 import HighchartsReact from 'highcharts-react-official';
 import Highcharts from 'highcharts/highstock';
 
@@ -17,9 +17,12 @@ const Chart = forwardRef(function Chart(props, ref) {
             addCountsHistory: (countsHistory) => {
                 if (chartRef.current) {
                     const chart = chartRef.current.chart
-                    const points = countsHistory.map(counts => [counts.ts, counts.foo]);
-                    for (let point of  points) {
-                        chart.series[0].addPoint(point);
+                    for (let counts of countsHistory) {
+                        chart.series[0].addPoint([counts.ts, counts.foo]);
+                        chart.series[1].addPoint([counts.ts, counts.bar]);
+                        chart.series[2].addPoint([counts.ts, counts.foobar]);
+                        chart.series[3].addPoint([counts.ts, counts.money]);
+                        chart.series[4].addPoint([counts.ts, counts.robot]);
                     }
                     chart.redraw()
                     // NB: In case we need to update all points in the future:
@@ -29,32 +32,60 @@ const Chart = forwardRef(function Chart(props, ref) {
         }
     });
 
-    const [chartOptions, setChartOptions] = useState({
+    function durationFormatter(ms) {
+        const seconds = Number(ms) / 1000;
+        const h = Math.floor(seconds % (3600 * 24) / 3600);
+        const m = Math.floor(seconds % 3600 / 60);
+        return `${h < 10 ? `0${h}` : h}:${m < 10 ? `0${m}` : m}`
+    }
+
+    const chartOptions = {
+        title: {
+            text: 'Resource graph', align: 'left'
+        },
+
+        subtitle: {
+            text: 'Source: WebSocket from backend', align: 'left'
+        },
+
+        plotOptions: {
+            series: {
+                crosshair: true
+            }
+        },
+        
         xAxis: {
-            type: 'logarithmic', crosshair: {
+            labels: {
+                formatter: function () {
+                    return durationFormatter(this.value);
+                }
+            },
+            crosshair: {
                 color: '#4E7DD9', dashStyle: 'Dash',
             }, ordinal: false, minRange: 1,
-        }, yAxis: {
-            opposite: false, labels: {
-                format: '{value}%',
-            }, gridLineDashStyle: 'Dash', gridLineColor: '#01052D40', gridLineWidth: 0.5, // min: yAxisMin,
-        }, series: [{
-            type: 'areaspline', name: 'Chart', data: null, lineWidth: 3, lineColor: '#4E7DD9', fillColor: {
-                linearGradient: {
-                    x1: 0, y1: 0, x2: 0, y2: 1,
-                }, stops: [[0, 'rgba(78, 125, 217, 0.4)'], [1, 'rgba(78, 125, 217, 0.05)'],],
-            }, marker: {
-                fillColor: 'white', lineWidth: 2, radius: 3, lineColor: '#4E7DD9',
-            }, animation: {
-                duration: 500,
-            },
-        },], chart: {
-            backgroundColor: 'transparent', // zoomType: "x",
-        }, navigation: {
-            enabled: false, buttonOptions: {
-                enabled: false,
-            },
-        }, rangeSelector: {enabled: false}, credits: {enabled: false}, tooltip: {
+        },
+
+        yAxis: {
+            title: {
+                text: 'Resource count',
+            }
+        },
+
+        series: [
+            {name: 'foo',},
+            {name: 'bar'},
+            {name: 'foobar'},
+            {name: 'money'},
+            {name: 'robot'},
+        ],
+
+        chart: {
+            zoomType: 'xy' // Activer le zoom sur les axes x et y
+        },
+
+        tooltip: {
+            shared: true,
+            crosshairs: true,
             animation: true, // xDateFormat: "",
             useHTML: true,
             backgroundColor: 'rgba(255, 255, 255)',
@@ -67,32 +98,18 @@ const Chart = forwardRef(function Chart(props, ref) {
             shape: 'square', // split: true,
             hideDelay: 100,
             outside: false,
-        }, navigator: {
-            handles: {
-                // lineWidth: 1,
-                width: 20, height: 30,
-            }, maskFill: 'rgba(78, 125, 217, 0.2)', outlineWidth: 0, enabled: false, xAxis: {},
-        }, scrollbar: {
-            enabled: false,
         },
-    });
+    };
 
-    useEffect(() => {
-        setChartOptions({
-            series: {
-                data: [],
-            },
-        });
-    }, []);
 
     return (<div>
-            <HighchartsReact
-                highcharts={Highcharts}
-                options={chartOptions}
-                constructorType="chart"
-                ref={chartRef}
-            />
-        </div>);
+        <HighchartsReact
+            highcharts={Highcharts}
+            options={chartOptions}
+            constructorType="chart"
+            ref={chartRef}
+        />
+    </div>);
 });
 
 export default Chart;
