@@ -5,7 +5,7 @@ const IndexPage = () => {
     const chartRef = useRef();
     // const [transactions, setTransactions] = useState([]);
     useEffect(() => {
-        const ws = new WebSocket('ws://localhost:8080/ws',);
+        const ws = new WebSocket('ws://localhost:8000/ws',);
 
         // ws.onopen = event => {
         //   ws.send("Connect");

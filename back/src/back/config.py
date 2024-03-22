@@ -21,7 +21,7 @@ class CamelBaseModel(BaseModel):
 class ApiConfig(CamelBaseModel):
     """HTTP servers configuration."""
 
-    port: int = 8080
+    port: int = 8000
     monitoring_port: int = 9000
     framerate: int = (
         10  # number of notification per second sent by the backend to the frontend
