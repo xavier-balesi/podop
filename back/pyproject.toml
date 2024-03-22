@@ -3,7 +3,7 @@ name = "back"
 version = "0.1.0"
 description = "Default template for PDM package"
 authors = [
-    {name = "Thibaut Perrot", email = "phptib@gmail.com"},
+    { name = "Thibaut Perrot", email = "phptib@gmail.com" },
 ]
 dependencies = [
     "fastapi>=0.110.0",
@@ -15,18 +15,20 @@ dependencies = [
 ]
 requires-python = "==3.12.*"
 readme = "README.md"
-license = {text = "MIT"}
+license = { text = "MIT" }
 
 
 
 [tool.pdm.dev-dependencies]
-dev = [
+check = [
     "flake8>=6.0.0",
     "radon>=5.1.0",
-    "pytest-asyncio>=0.23.4",
     "ruff>=0.3.0",
-    "pytest-cov>=4.1.0",
+]
+test = [
     "diff-cover>=8.0.3",
+    "pytest-asyncio>=0.23.4",
+    "pytest-cov>=4.1.0",
 ]
 
 [tool.pytest.ini_options]
@@ -44,13 +46,38 @@ addopts = """
 include = ["pyproject.toml", "src/**/*.py", "tests/**/*.py"]
 
 [tool.ruff.lint]
-# TODO: activate pylint with "D" and see other rules with: pdm run ruff --select=ALL
-select = ["F", "E", "W", "I", "N", "ASYNC", "A",  "T10", "T20", "PT", "Q", "RET", "SIM", "RUF"]
+# TODO: activate pydocstyle with "D"
+# Available rules here: https://docs.astral.sh/ruff/rules/
+# Find interesting rules among: pdm check_all
+select = [
+    "A", # flake8-builtins
+    "ASYNC", # flake8-async
+    "B", # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "COM", # flake8-commas
+    "D212", # pydocstyle > multi-line-summary-first-line
+    "E", # pycodestyle errors
+    "F", # pyflakes
+    "I", # isort
+    "N", # pep8-naming
+    "PT", # pylint
+    "Q", # flake8-quotes
+    "RET", # flake8-return
+    "RSE", # flake8-raise
+    "RUF", # Ruff-specific rules
+    "SIM", # flake8-simplify
+    "SLF", # flake8-self
+    "SLOT", # flake8-slots
+    "T10", # flake8-debugger
+    "T20", # flake8-print
+    "UP", # pyupgrade
+    "W", # pycodestyle warnings
+]
 ignore = [
     "E501", # Most of the time the ruff formatter will adjust the line length, accept some exceptions like long strings.
-    "PT011", # Accept pytest.raises without asserting on the message.
     "PT004", # Disable convertion where fixtures not returning an object have to start with an underscore.
     "PT005", # Idem.
+    "PT011", # Accept pytest.raises without asserting on the message.
     "PT023", # Accept @pytest.mark.foo without ending with "()".
     "RET504", # It's sometimes useful add a breakpoint before the return statement to see the returned object.
     "RUF100", # Unless using RUF100 to noqa like "noqa: R701,RUF100", the noqa is removed. It seems a bug.
@@ -66,15 +93,21 @@ classmethod-decorators = [
     "comparator",
 ]
 
+[tool.ruff.format]
+docstring-code-format = true
+
 [tool.pdm.scripts]
-check = {shell = """
-    ruff check
+check = { shell = """
+    ruff check {args}
     # Also check Cyclomatic Complexity and fail if >= rank D (more than moderate - more complex block).
     # Waiting for ruff integration: https://github.com/astral-sh/ruff/issues/2418
     flake8 --ignore E501 --radon-show-closures --radon-no-assert --radon-max-cc 21 ./src # ./tests
-"""}
+""" }
 
-format = {shell = """
+# Ignore flake8-errmsg that creates too much lines of code.
+check_all = { composite = ["check --select=ALL --ignore=EM101,EM102,EM103 src"] }
+
+format = { shell = """
     if [ x{args} != x-f ]; then
         if ! git diff --quiet -- '**/*.py'; then
             echo 'Some files are not committed, use -f option to force unsafe formatting'
@@ -84,23 +117,29 @@ format = {shell = """
     # Using black over "ruff format" to adjective line length.
     ruff format
     ruff check --unsafe-fixes --fix
-"""}
+""" }
+
+format_all = { composite = ["format", "check_all --unsafe-fixes --fix"] }
 
 # A safe formatting intented to be called when saving the provided file with Ctrl+S.
-safe_format = {shell = """
+safe_format = { shell = """
     ruff format {args}
     ruff check --fix {args}
-"""}
+""" }
 
 # For retro compatibility.
-safe_reformat = {composite = ["safe_format"]}
+safe_reformat = { composite = ["safe_format"] }
 
-test = {shell = """
+test = { shell = """
     python -m tests {args}
     # To not fail the CI pipeline when FAIL_ON_SONAR_ERROR parameter is unchecked, check the diff coverage only locally.
     # Let Sonar handle it in the CI/CD => read comment in coverage-diff.sh to configure Sonar properly.
     bash -c '[ -v CI ] && exit 0 || ./tools/coverage-diff.sh'
     echo "To open the HTML report:\npython -m webbrowser -t .coverage_reports/html-coverage-report/index.html"
-"""}
+""" }
 
+# Run the CI pipeline.
+ci = { composite = ["check", "test"] }
+
+# Run the backend.
 back = "python -m back"

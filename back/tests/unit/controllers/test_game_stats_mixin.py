@@ -8,7 +8,7 @@ class TestGameStatsMixin:
     def test_game_stats_mixin_on_new_transaction(self):
         mixin = GameStatsMixin()
         mixin.on_new_transaction(
-            Transaction(ts=1, add=[Foo.build()], remove=[Money(value=2)])
+            Transaction(ts=1, add=[Foo.build()], remove=[Money(value=2)]),
         )
         counts_history = mixin.get_counts_history()
         expected_counts = Counts(ts=1, foo=1, bar=0, foobar=0, robot=0, money=-2)

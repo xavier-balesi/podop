@@ -18,7 +18,7 @@ class Transaction(BaseModel):
     add: list[InventoryModel] = Field(default_factory=list)
     remove: list[InventoryModel] = Field(default_factory=list)
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         if "ts" not in kwargs:
             kwargs["ts"] = scheduler.ts
         super().__init__(**kwargs)

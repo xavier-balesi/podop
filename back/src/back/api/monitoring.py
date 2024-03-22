@@ -15,7 +15,7 @@
 #         the use of the provided software.
 #
 
-"""main module executed by the Dockerfile"""
+"""main module executed by the Dockerfile."""
 
 import logging
 
@@ -27,6 +27,6 @@ app = FastAPI()
 
 
 @app.get("/monitoring/health")
-async def healthcheck():
-    """Healthcheck for Kubernetes"""
+async def healthcheck() -> int:
+    """Healthcheck for Kubernetes."""
     return 200

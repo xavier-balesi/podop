@@ -1,12 +1,15 @@
 import asyncio
 import logging
+from typing import TYPE_CHECKING
 
 from fastapi import FastAPI
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from back.config import ApiConfig, ApplicationConfig
 from back.controllers.game import Game
-from back.models.counts_history import CountsHistory
+
+if TYPE_CHECKING:
+    from back.models.counts_history import CountsHistory
 
 log = logging.getLogger(__name__)
 
@@ -16,9 +19,8 @@ api_config: ApiConfig = ApplicationConfig().api
 
 
 @app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    """
-    Start a new game.
+async def websocket_endpoint(websocket: WebSocket) -> None:
+    """Start a new game.
 
     The game runs as fast as possible. Eventually slow it down by using the `turn_interval` config.
     Spying the game by sampling the game resources at a given framerate (see `framerate` config).
@@ -29,7 +31,7 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     game = Game()
 
-    async def notify_front():
+    async def notify_front() -> None:
         while game.running:
             await asyncio.sleep(1.0 / api_config.framerate)
 

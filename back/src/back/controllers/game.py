@@ -16,16 +16,14 @@ log = logging.getLogger()
 class Game(GameStatsMixin, TradingResourceGame):
     __slots__ = ["_player", "_inventory", "running", "_transactions"]
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self._player = RandomStrategyPlayer(game=self)
 
         # Declare fake transactions with initial robots just in case we want a reinforcement learning model
         # to understand the game initial state.
-        self._transactions.extend(
-            [Transaction(add=[robot for robot in self._inventory.robots])]
-        )
+        self._transactions.extend([Transaction(add=list(self._inventory.robots))])
         super().on_new_transaction(self._transactions[0])
 
         # Observe initial robots.
@@ -56,7 +54,7 @@ class Game(GameStatsMixin, TradingResourceGame):
         # Once the inventory is updated, propose to the player to play, make orders.
         self._player.trade_in_live()
 
-    async def run(self):
+    async def run(self) -> None:
         # player plays for the first time
         self._player.trade_in_live()
 
@@ -66,10 +64,10 @@ class Game(GameStatsMixin, TradingResourceGame):
             # to abort the program on Ctrl+C.
             await asyncio.sleep(game_config.turn_interval / 1000)
 
-    def start_next_turn(self):
-        if scheduler._tasks:
+    def start_next_turn(self) -> None:
+        if busy_until := scheduler.busy_until:
             # Execute all tasks by jumping to the last task timestamp.
-            scheduler.set_timestamp(scheduler._tasks[-1].start_ts)
+            scheduler.set_timestamp(busy_until)
         else:
             log.critical("⛔ The game has deadlock... Aborting.")
             self.running = False

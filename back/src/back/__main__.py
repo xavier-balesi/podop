@@ -12,11 +12,10 @@ log = logging.getLogger(__name__)
 servers = []
 
 
-def cancel_all_tasks(exclude_current=False):
-    """
-    Cancel all asyncio tasks to force exiting on Ctrl+C.
+def cancel_all_tasks(exclude_current=False) -> None:
+    """Cancel all asyncio tasks to force exiting on Ctrl+C.
     Necessary only because of the game infinite loop.
-    TODO: find cleaner solution
+    TODO: find cleaner solution.
     """
     all_tasks = asyncio.all_tasks()
     if exclude_current:
@@ -38,7 +37,9 @@ class MultiServer(Server):
         await self.serve(sockets=sockets)
 
     async def shutdown(
-        self, *args, **kwargs
+        self,
+        *args,
+        **kwargs,
     ) -> None:  # pragma: no cover (can only be called in prod)
         """Shutdown the server and notify the others."""
         self.on_shutdown()
@@ -46,14 +47,14 @@ class MultiServer(Server):
         return await super().shutdown(*args, **kwargs)
 
 
-def exit_application():
+def exit_application() -> None:
     """Exit the application."""
     log.info("exiting the backend")
     for server in servers:
         server.should_exit = True
 
 
-async def main():
+async def main() -> None:
     """Main function executed by the Dockerfile."""
     app_config: ApplicationConfig = ApplicationConfig()
 
@@ -69,7 +70,7 @@ async def main():
         servers.append(MultiServer(config=config, on_shutdown=exit_application))
 
     log.info(
-        f"the backend is ready and listen on {api_port} (API) and {monitoring_port} (monitoring)"
+        f"the backend is ready and listen on {api_port} (API) and {monitoring_port} (monitoring)",
     )
     # By using a dedicated port for monitoring features (healthcheck, metrics, changing log level, etc.),
     # and not exposing it, the front can't have access to these features. It's more risky to expect

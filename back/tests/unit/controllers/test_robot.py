@@ -27,7 +27,7 @@ def test_robot_mine_foo():
 
     scheduler.set_timestamp(expected_minded_ts)
     txn_handler.assert_called_once_with(
-        Transaction(ts=expected_minded_ts, add=[Foo(id=0)])
+        Transaction(ts=expected_minded_ts, add=[Foo(id=0)]),
     )
 
 
@@ -49,13 +49,13 @@ def test_robot_chain_mine_foo():
     txn_handler.assert_not_called()
     scheduler.jump(1 + game_config.mine_foo_duration)
     txn_handler.assert_called_once_with(
-        Transaction(ts=expected_minded_ts, add=[Foo(id=0)])
+        Transaction(ts=expected_minded_ts, add=[Foo(id=0)]),
     )
 
     robot.mine_foo()
     scheduler.jump(game_config.mine_foo_duration)
     txn_handler.assert_called_with(
         Transaction(
-            ts=expected_minded_ts + game_config.mine_foo_duration, add=[Foo(id=1)]
+            ts=expected_minded_ts + game_config.mine_foo_duration, add=[Foo(id=1)],
         ),
     )

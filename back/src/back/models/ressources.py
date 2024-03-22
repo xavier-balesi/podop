@@ -8,8 +8,7 @@ class BaseRessource(BaseModel):
     """Base data model that can be listed in :class:`~back.models.transaction.Transaction`."""
 
     def __init_subclass__(cls, **kwargs):
-        """
-        Avoid having the error: "Unable to extract tag using discriminator 'type'"
+        """Avoid having the error: "Unable to extract tag using discriminator 'type'"
         at runtime. We directly see the problem at import time.
         """
         # __init_subclass__ avoid having to use a metaclass in this use case
@@ -30,7 +29,7 @@ class IncrIdRessource(BaseRessource):
         return cls(*args, id=cls._last_id, **kwargs)
 
     @classmethod
-    def reset(cls):
+    def reset(cls) -> None:
         cls._last_id = -1
 
 

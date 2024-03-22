@@ -33,7 +33,7 @@ def action_wrapper(f):
     def _action_wrapper(self, *args, **kwargs):
         if self.action != Action.WAITING_FOR_ORDER:
             raise RobotBusyError(
-                f"Robot {self} can't {f.__name__} because it is not waiting for an order."
+                f"Robot {self} can't {f.__name__} because it is not waiting for an order.",
             )
 
         # Robot is at the good place, no need to move.
@@ -62,12 +62,12 @@ class Robot(Provider, IncrIdRessource):
     previous_action: Action = Field(default=Action.WAITING_FOR_ORDER, exclude=True)
     _inventory: "Inventory" = PrivateAttr()
 
-    def __init__(self, inventory: "Inventory", *args, **kwargs):
+    def __init__(self, inventory: "Inventory", *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._inventory = inventory
         self._action: Action = Action.WAITING_FOR_ORDER
 
-    def _notify_transaction(self, *args, **kwargs):
+    def _notify_transaction(self, *args, **kwargs) -> None:
         from back.models.transaction import Transaction
 
         self.action = Action.WAITING_FOR_ORDER
@@ -78,32 +78,33 @@ class Robot(Provider, IncrIdRessource):
         return self._action
 
     @action.setter
-    def action(self, value):
+    def action(self, value) -> None:
         self.previous_action = self._action
         self._action = value
         log.debug(f"🤖 N°{self.id}: {self.previous_action} -> {self._action}")
 
     @action_wrapper
-    def mine_foo(self):
+    def mine_foo(self) -> None:
         self.action = Action.MINE_FOO
         scheduler.schedule(game_config.mine_foo_duration, self._mine_foo_callback)
 
-    def _mine_foo_callback(self):
+    def _mine_foo_callback(self) -> None:
         self._notify_transaction(add=[Foo.build()])
 
     @action_wrapper
-    def mine_bar(self):
+    def mine_bar(self) -> None:
         self.action = Action.MINE_BAR
         mine_bar_duration = randint(
-            game_config.mine_bar_duration_min, game_config.mine_bar_duration_max
+            game_config.mine_bar_duration_min,
+            game_config.mine_bar_duration_max,
         )
         scheduler.schedule(mine_bar_duration, self._mine_bar_callback)
 
-    def _mine_bar_callback(self):
+    def _mine_bar_callback(self) -> None:
         self._notify_transaction(add=[Bar.build()])
 
     @action_wrapper
-    def forge_foobar(self):
+    def forge_foobar(self) -> None:
         self.action = Action.FORGE_FOOBAR
         inventory = self._inventory
         if not (foo := inventory.get_foo()):
@@ -123,28 +124,29 @@ class Robot(Provider, IncrIdRessource):
             bar=bar,
         )
 
-    def _forge_foobar_callback(self, foo, bar):
+    def _forge_foobar_callback(self, foo, bar) -> None:
         random = randint(1, 100)
         if random <= game_config.forge_foobar_success_rate:
             self._notify_transaction(
-                add=[FooBar.build(foo_id=foo.id, bar_id=bar.id)], remove=[foo, bar]
+                add=[FooBar.build(foo_id=foo.id, bar_id=bar.id)],
+                remove=[foo, bar],
             )
         else:
             self._notify_transaction(remove=[foo])
             bar.lock = False
 
     @action_wrapper
-    def sell_foobar(self, count):
+    def sell_foobar(self, count) -> None:
         if not 1 <= count <= game_config.sell_foobar_max_count:
             raise SellError(
-                f"🤖 N°{self.id}: count must be between 1 and {game_config.sell_foobar_max_count}"
+                f"🤖 N°{self.id}: count must be between 1 and {game_config.sell_foobar_max_count}",
             )
         self.action = Action.SELL_FOOBAR
         inventory = self._inventory
         log.debug(f"sell_foobar while {inventory}")
         if not (foobars := inventory.get_foobars(count=count)):
             log.debug(
-                f"🤖 N°{self.id}: not enough foobar to sell: {len(foobars)}/{count}"
+                f"🤖 N°{self.id}: not enough foobar to sell: {len(foobars)}/{count}",
             )
             self.action = Action.WAITING_FOR_ORDER
             return
@@ -155,14 +157,14 @@ class Robot(Provider, IncrIdRessource):
             foobars=foobars,
         )
 
-    def _sell_foobar_callback(self, foobars):
+    def _sell_foobar_callback(self, foobars) -> None:
         self._notify_transaction(
             add=[Money(value=game_config.money_for_foobar * len(foobars))],
             remove=foobars,
         )
 
     @action_wrapper
-    def buy_robot(self):
+    def buy_robot(self) -> None:
         self.action = Action.SELL_FOOBAR
         inventory = self._inventory
         log.debug(f"sell_foobar while {inventory}")
@@ -177,11 +179,11 @@ class Robot(Provider, IncrIdRessource):
         else:
             if inventory.money < game_config.money_for_robot:
                 log.debug(
-                    f"🤖 N°{self.id}: not enough money to buy a robot: {inventory.money}/{game_config.money_for_robot}"
+                    f"🤖 N°{self.id}: not enough money to buy a robot: {inventory.money}/{game_config.money_for_robot}",
                 )
             else:
                 log.debug(
-                    f"🤖 N°{self.id}: not enough foos to buy a robot: {len(foos)}/{game_config.foo_for_robot}"
+                    f"🤖 N°{self.id}: not enough foos to buy a robot: {len(foos)}/{game_config.foo_for_robot}",
                 )
                 for foo in foos:
                     foo.lock = False

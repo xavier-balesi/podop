@@ -18,19 +18,17 @@ class Player:
 
 
 class RandomStrategyPlayer(Player):
-    """
-    Player that plays randomly.
+    """Player that plays randomly.
     Many random games might help finding good strategies.
     """
 
     __slots__ = ["_game"]
 
-    def __init__(self, game: "Game"):
+    def __init__(self, game: "Game") -> None:
         self._game = game
 
-    def destroy(self):
-        """
-        Destructor method.
+    def destroy(self) -> None:
+        """Destructor method.
 
         Not using __del__ because it notifies when the object is garbage collected,
         but it may not be called with cyclic references. It's not deterministic, so it's not
@@ -40,9 +38,9 @@ class RandomStrategyPlayer(Player):
         """
         self._game = None
 
-    def trade_in_live(self):
+    def trade_in_live(self) -> None:
         """Play each time the game changes."""
-        inventory = self._game._inventory
+        inventory = self._game.get_inventory()
         for robot in inventory.robots:
             if robot.action != Action.WAITING_FOR_ORDER:
                 continue
@@ -61,7 +59,8 @@ class RandomStrategyPlayer(Player):
 
             # Can we buy a robot?
             if inventory.money >= game_config.money_for_robot and inventory.get_foos(
-                count=game_config.foo_for_robot, lock=False
+                count=game_config.foo_for_robot,
+                lock=False,
             ):
                 possible_actions.append(robot.buy_robot)
 

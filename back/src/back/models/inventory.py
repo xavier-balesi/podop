@@ -11,12 +11,11 @@ game_config: GameConfig = ApplicationConfig().game
 
 
 class Inventory:
-    """
-    Inventory of all game data models.
+    """Inventory of all game data models.
     Act as the :class:`~back.controllers.Game` data model.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Complete class methods.
         for ressource_name in IncrIdRessources.__args__:
             ressource_name = ressource_name.__name__.lower()
@@ -40,11 +39,13 @@ class Inventory:
             Robot.build(inventory=self) for _ in range(game_config.min_robots)
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Inventory(foos={len(self.foos)}, bars={len(self.bars)}, foobars={len(self.foobars)}, robots={len(self.robots)}, money={self.money.value})"
 
     def get_ressource(
-        self, ressource_name: IncrIdRessources, lock: bool = True
+        self,
+        ressource_name: IncrIdRessources,
+        lock: bool = True,
     ) -> IncrIdRessources | None:
         ressources = getattr(self, ressource_name + "s")
         for ressource in ressources:
@@ -56,7 +57,10 @@ class Inventory:
         return None
 
     def get_ressources(
-        self, ressource_name: IncrIdRessources, count: int, lock=True
+        self,
+        ressource_name: IncrIdRessources,
+        count: int,
+        lock=True,
     ) -> list[IncrIdRessources]:
         returned_ressources = []
         ressources = getattr(self, ressource_name + "s")
@@ -77,7 +81,7 @@ class Inventory:
 
         return returned_ressources
 
-    def on_new_transaction(self, transaction: Transaction):
+    def on_new_transaction(self, transaction: Transaction) -> None:
         for model in transaction.add:
             match model:
                 case Foo():

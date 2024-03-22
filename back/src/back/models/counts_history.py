@@ -23,7 +23,7 @@ from back.models.transaction import Transaction
 class Counts(RootModel):
     root: Counter
 
-    def update(self, transaction: Transaction):
+    def update(self, transaction: Transaction) -> None:
         root = self.root
         root["ts"] = transaction.ts
         for add in transaction.add:
@@ -39,10 +39,10 @@ class Counts(RootModel):
 class CountsHistory(RootModel):
     root: list[Counts] = Field(default_factory=list)
 
-    def append(self, counts: Counts):
+    def append(self, counts: Counts) -> None:
         self.root.append(counts)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.root)
 
     def __getitem__(self, key):
@@ -50,5 +50,5 @@ class CountsHistory(RootModel):
             return type(self)(self.root[key])
         return self.root[key]
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key, value) -> None:
         self.root[key] = value
