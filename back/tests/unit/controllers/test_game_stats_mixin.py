@@ -1,12 +1,12 @@
-from back.controllers.transaction_analyser_mixin import TransactionAnalyserMixin
+from back.controllers.game_stats_mixin import GameStatsMixin
 from back.models.counts_history import Counts, CountsHistory
 from back.models.ressources import Foo, Money
 from back.models.transaction import Transaction
 
 
-class TestTransactionAnalyserMixin:
-    def test_trn_analyser_mixin_on_new_transaction(self):
-        mixin = TransactionAnalyserMixin()
+class TestGameStatsMixin:
+    def test_game_stats_mixin_on_new_transaction(self):
+        mixin = GameStatsMixin()
         mixin.on_new_transaction(
             Transaction(ts=1, add=[Foo.build()], remove=[Money(value=2)])
         )

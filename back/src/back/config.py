@@ -24,7 +24,9 @@ class ApiConfig(CamelBaseModel):
     port: int = 8000
     monitoring_port: int = 9000
     framerate: int = (
-        10  # number of notification per second sent by the backend to the frontend
+        # Number of notification per second sent by the backend to the frontend.
+        # Could be adapted according to the "turn_interval" parameter.
+        30
     )
 
 
@@ -46,10 +48,11 @@ class GameConfig(CamelBaseModel):
     foo_for_robot: int = 6  # number of foo to buy a robot
     min_robots: int = 2  # the game starts with this number of robots
     max_robots: int = 30  # the game ends when reaching this number of robots
-    # TODO: reset turn_interval to 0
-    turn_interval: int = 10  # interval between turns in ms
     turn_duration: int = (
         10  # duration of one turn in ms, the scheduler jump with this duration
+    )
+    turn_interval: int = (
+        0  # interval between turns in ms, increase to slow down the game
     )
 
 

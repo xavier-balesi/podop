@@ -27,7 +27,7 @@ class Counts(RootModel):
         root = self.root
         root["ts"] = transaction.ts
         for add in transaction.add:
-            root[add.type] += 1
+            root[add.type] += add.value if type(add) is Money else 1
         for remove in transaction.remove:
             root[remove.type] -= remove.value if type(remove) is Money else 1
 

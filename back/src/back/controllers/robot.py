@@ -107,11 +107,11 @@ class Robot(Provider, IncrIdRessource):
         self.action = Action.FORGE_FOOBAR
         inventory = self._inventory
         if not (foo := inventory.get_foo()):
-            log.warning(f"🤖 N°{self.id}: not enough foo to forge a foobar")
+            log.debug(f"🤖 N°{self.id}: not enough foo to forge a foobar")
             self.action = Action.WAITING_FOR_ORDER
             return
         if not (bar := inventory.get_bar()):
-            log.warning(f"🤖 N°{self.id}: not enough bar to forge a foobar")
+            log.debug(f"🤖 N°{self.id}: not enough bar to forge a foobar")
             foo.lock = False
             self.action = Action.WAITING_FOR_ORDER
             return
@@ -143,7 +143,7 @@ class Robot(Provider, IncrIdRessource):
         inventory = self._inventory
         log.debug(f"sell_foobar while {inventory}")
         if not (foobars := inventory.get_foobars(count=count)):
-            log.warning(
+            log.debug(
                 f"🤖 N°{self.id}: not enough foobar to sell: {len(foobars)}/{count}"
             )
             self.action = Action.WAITING_FOR_ORDER
@@ -176,11 +176,11 @@ class Robot(Provider, IncrIdRessource):
             )
         else:
             if inventory.money < game_config.money_for_robot:
-                log.warning(
+                log.debug(
                     f"🤖 N°{self.id}: not enough money to buy a robot: {inventory.money}/{game_config.money_for_robot}"
                 )
             else:
-                log.warning(
+                log.debug(
                     f"🤖 N°{self.id}: not enough foos to buy a robot: {len(foos)}/{game_config.foo_for_robot}"
                 )
                 for foo in foos:

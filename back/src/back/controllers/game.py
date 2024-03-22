@@ -3,32 +3,29 @@ import logging
 
 from back import scheduler
 from back.config import ApplicationConfig, GameConfig
+from back.controllers.game_stats_mixin import GameStatsMixin
 from back.controllers.player import RandomStrategyPlayer
 from back.controllers.robot import Robot
-from back.controllers.transaction_analyser_mixin import TransactionAnalyserMixin
-from back.controllers.transaction_listener import TransactionListener
-from back.models.inventory import Inventory
+from back.controllers.trading_resource_game import TradingResourceGame
 from back.models.transaction import Transaction
 
 game_config: GameConfig = ApplicationConfig().game
 log = logging.getLogger()
 
 
-class Game(TransactionAnalyserMixin, TransactionListener):
+class Game(GameStatsMixin, TradingResourceGame):
     __slots__ = ["_player", "_inventory", "running", "_transactions"]
 
     def __init__(self):
         super().__init__()
-        self._player = RandomStrategyPlayer(game=self)
-        self._inventory = Inventory()
-        self.running: bool = True
 
-        # Transactions are like "gold source" outputs of the game.
+        self._player = RandomStrategyPlayer(game=self)
+
         # Declare fake transactions with initial robots just in case we want a reinforcement learning model
         # to understand the game initial state.
-        self._transactions = [
-            Transaction(add=[robot for robot in self._inventory.robots])
-        ]
+        self._transactions.extend(
+            [Transaction(add=[robot for robot in self._inventory.robots])]
+        )
         super().on_new_transaction(self._transactions[0])
 
         # Observe initial robots.
@@ -37,7 +34,6 @@ class Game(TransactionAnalyserMixin, TransactionListener):
 
     def on_new_transaction(self, transaction: Transaction) -> None:
         super().on_new_transaction(transaction)
-        self._transactions.append(transaction)
 
         # Observe new robots.
         for model in transaction.add:
@@ -59,18 +55,6 @@ class Game(TransactionAnalyserMixin, TransactionListener):
 
         # Once the inventory is updated, propose to the player to play, make orders.
         self._player.trade_in_live()
-
-    def get_counts(self):
-        inventory = self._inventory
-        return {
-            "foo": len(inventory.foos),
-            "bar": len(inventory.bars),
-            "foobar": len(inventory.foobars),
-            "robot": len(inventory.robots),
-            "money": inventory.money.value,
-            "ts": scheduler.ts,
-            "transaction": len(self._transactions),
-        }
 
     async def run(self):
         # player plays for the first time

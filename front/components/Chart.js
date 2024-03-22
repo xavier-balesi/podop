@@ -16,19 +16,37 @@ const Chart = forwardRef(function Chart(props, ref) {
         return {
             addCountsHistory: (countsHistory) => {
                 if (chartRef.current) {
-                    const chart = chartRef.current.chart
+                    const chart = chartRef.current.chart;
+                    const fooPoints = [];
+                    const barPoints = [];
+                    const foobarPoints = [];
+                    const moneyPoints = [];
+                    const robotPoints = [];
                     for (let counts of countsHistory) {
-                        chart.series[0].addPoint([counts.ts, counts.foo]);
-                        chart.series[1].addPoint([counts.ts, counts.bar]);
-                        chart.series[2].addPoint([counts.ts, counts.foobar]);
-                        chart.series[3].addPoint([counts.ts, counts.money]);
-                        chart.series[4].addPoint([counts.ts, counts.robot]);
+                        fooPoints.push([counts.ts, counts.foo]);
+                        barPoints.push([counts.ts, counts.bar]);
+                        foobarPoints.push([counts.ts, counts.foobar]);
+                        moneyPoints.push([counts.ts, counts.money]);
+                        robotPoints.push([counts.ts, counts.robot]);
                     }
-                    chart.redraw()
-                    // NB: In case we need to update all points in the future:
-                    // https://api.highcharts.com/class-reference/Highcharts.Series.html#setData
+                    chart.series[0].setData(fooPoints, false);
+                    chart.series[1].setData(barPoints, false);
+                    chart.series[2].setData(foobarPoints, false);
+                    chart.series[3].setData(moneyPoints, false);
+                    chart.series[4].setData(robotPoints, false);
+                    chart.redraw();
                 }
-            }
+            }, addCounts: (counts) => {
+                if (chartRef.current) {
+                    const chart = chartRef.current.chart
+                    chart.series[0].addPoint([counts.ts, counts.foo]);
+                    chart.series[1].addPoint([counts.ts, counts.bar]);
+                    chart.series[2].addPoint([counts.ts, counts.foobar]);
+                    chart.series[3].addPoint([counts.ts, counts.money]);
+                    chart.series[4].addPoint([counts.ts, counts.robot]);
+                    chart.redraw();
+                }
+            },
         }
     });
 
@@ -53,14 +71,13 @@ const Chart = forwardRef(function Chart(props, ref) {
                 crosshair: true
             }
         },
-        
+
         xAxis: {
             labels: {
                 formatter: function () {
                     return durationFormatter(this.value);
                 }
-            },
-            crosshair: {
+            }, crosshair: {
                 color: '#4E7DD9', dashStyle: 'Dash',
             }, ordinal: false, minRange: 1,
         },
@@ -71,22 +88,16 @@ const Chart = forwardRef(function Chart(props, ref) {
             }
         },
 
-        series: [
-            {name: 'foo',},
-            {name: 'bar'},
-            {name: 'foobar'},
-            {name: 'money'},
-            {name: 'robot'},
-        ],
+        series: [{name: 'foo',}, {name: 'bar'}, {name: 'foobar'}, {name: 'money'}, {name: 'robot'},],
 
         chart: {
-            zoomType: 'xy' // Activer le zoom sur les axes x et y
+            zoomType: 'xy'
         },
 
         tooltip: {
             shared: true,
             crosshairs: true,
-            animation: true, // xDateFormat: "",
+            animation: true,
             useHTML: true,
             backgroundColor: 'rgba(255, 255, 255)',
             borderWidth: 1,
@@ -95,7 +106,7 @@ const Chart = forwardRef(function Chart(props, ref) {
             shadow: {
                 offsetX: 1, offsetY: 2, width: 2, opacity: 0.05,
             },
-            shape: 'square', // split: true,
+            shape: 'square',
             hideDelay: 100,
             outside: false,
         },

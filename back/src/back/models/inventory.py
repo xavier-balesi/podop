@@ -1,3 +1,4 @@
+import logging
 from functools import partial
 
 from back.config import ApplicationConfig, GameConfig
@@ -5,6 +6,7 @@ from back.controllers.robot import Robot
 from back.models.ressources import Bar, Foo, FooBar, Money
 from back.models.transaction import IncrIdRessources, Transaction
 
+log = logging.getLogger(__name__)
 game_config: GameConfig = ApplicationConfig().game
 
 
