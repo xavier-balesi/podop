@@ -107,11 +107,11 @@ class Robot(Provider, IncrIdRessource):
     def forge_foobar(self) -> None:
         self.action = Action.FORGE_FOOBAR
         inventory = self._inventory
-        if not (foo := inventory.get_foo()):
+        if not (foo := inventory.get_foo()):  # type: ignore
             log.debug(f"🤖 N°{self.id}: not enough foo to forge a foobar")
             self.action = Action.WAITING_FOR_ORDER
             return
-        if not (bar := inventory.get_bar()):
+        if not (bar := inventory.get_bar()):  # type: ignore
             log.debug(f"🤖 N°{self.id}: not enough bar to forge a foobar")
             foo.lock = False
             self.action = Action.WAITING_FOR_ORDER
@@ -144,7 +144,7 @@ class Robot(Provider, IncrIdRessource):
         self.action = Action.SELL_FOOBAR
         inventory = self._inventory
         log.debug(f"sell_foobar while {inventory}")
-        if not (foobars := inventory.get_foobars(count=count)):
+        if not (foobars := inventory.get_foobars(count=count)):  # type: ignore
             log.debug(
                 f"🤖 N°{self.id}: not enough foobar to sell: {len(foobars)}/{count}",
             )
@@ -168,8 +168,8 @@ class Robot(Provider, IncrIdRessource):
         self.action = Action.SELL_FOOBAR
         inventory = self._inventory
         log.debug(f"sell_foobar while {inventory}")
-        if inventory.money >= game_config.money_for_robot and (
-            foos := inventory.get_foos(count=game_config.foo_for_robot)
+        if inventory.money >= game_config.money_for_robot and (  # type: ignore
+            foos := inventory.get_foos(count=game_config.foo_for_robot)  # type: ignore
         ):
             # Thankfully the transactions using money is not delay, so we don't have to lock the money.
             self._notify_transaction(

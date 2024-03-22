@@ -25,7 +25,7 @@ class RandomStrategyPlayer(Player):
     __slots__ = ["_game"]
 
     def __init__(self, game: "Game") -> None:
-        self._game = game
+        self._game: Game | None = game
 
     def destroy(self) -> None:
         """Destructor method.
@@ -40,7 +40,10 @@ class RandomStrategyPlayer(Player):
 
     def trade_in_live(self) -> None:
         """Play each time the game changes."""
-        inventory = self._game.get_inventory()
+        if (game := self._game) is None:
+            log.warning("The game is detached fom the player.")
+            return
+        inventory = game.get_inventory()
         for robot in inventory.robots:
             if robot.action != Action.WAITING_FOR_ORDER:
                 continue
@@ -49,16 +52,16 @@ class RandomStrategyPlayer(Player):
             possible_actions = [robot.mine_foo, robot.mine_bar]
 
             # Can we forge a foobar?
-            if inventory.get_foo(lock=False) and inventory.get_bar(lock=False):
+            if inventory.get_foo(lock=False) and inventory.get_bar(lock=False):  # type: ignore
                 possible_actions.append(robot.forge_foobar)
 
             # Can we sell a random count of foobar?
             sell_count = randint(1, game_config.sell_foobar_max_count)
-            if inventory.get_foobars(count=sell_count, lock=False):
+            if inventory.get_foobars(count=sell_count, lock=False):  # type: ignore
                 possible_actions.append(partial(robot.sell_foobar, count=sell_count))
 
             # Can we buy a robot?
-            if inventory.money >= game_config.money_for_robot and inventory.get_foos(
+            if inventory.money >= game_config.money_for_robot and inventory.get_foos(  # type: ignore
                 count=game_config.foo_for_robot,
                 lock=False,
             ):
@@ -66,5 +69,5 @@ class RandomStrategyPlayer(Player):
 
             # Choose a random action that respect game rules.
             random_action = choice(possible_actions)
-            log.debug(f"player choose {random_action} while {self._game.get_counts()}")
+            log.debug(f"player choose {random_action} while {game.get_counts()}")
             random_action()

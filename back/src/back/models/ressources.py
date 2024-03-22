@@ -18,7 +18,9 @@ class BaseRessource(BaseModel):
 
 
 class IncrIdRessource(BaseRessource):
-    type: Literal["incremental_id"] = "incremental_id"
+    type: Literal["incremental_id", "foo", "bar", "foobar", "money", "robot"] = (
+        "incremental_id"
+    )
     _last_id: ClassVar[int] = -1
     id: int
     lock: bool = Field(default=False, exclude=True)

@@ -47,7 +47,7 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
         # Send the complete resource history when the game is over.
         counts_history: CountsHistory = game.get_counts_history()
         # TODO: timeit orjson.dumps(model.dict(exclude_none=True))
-        front_msg: str = counts_history.json(exclude_none=True)
+        front_msg = counts_history.json(exclude_none=True)
         # We can also debug the backend without frontend by doing:
         #   python -m websockets 'ws://localhost:8080/ws'
         # and displaying the desired data in color with:

@@ -5,20 +5,6 @@ from pydantic import Field, RootModel
 from back.models.ressources import Money
 from back.models.transaction import Transaction
 
-# class Counts(BaseModel):
-#     ts: int
-#     foo: int
-#     bar: int
-#     foobar: int
-#     robot: int
-#     money: int
-#
-#     def update(self, transaction: Transaction):
-#         for add in transaction.add:
-#             self[add.type] += 1
-#         for remove in transaction.remove:
-#             self[remove.type] -= 1
-
 
 class Counts(RootModel):
     root: Counter

@@ -17,7 +17,7 @@ class Inventory:
 
     def __init__(self) -> None:
         # Complete class methods.
-        for ressource_name in IncrIdRessources.__args__:
+        for ressource_name in IncrIdRessources.__args__:  # type: ignore
             ressource_name = ressource_name.__name__.lower()
             setattr(
                 self,
@@ -47,7 +47,7 @@ class Inventory:
         ressource_name: IncrIdRessources,
         lock: bool = True,
     ) -> IncrIdRessources | None:
-        ressources = getattr(self, ressource_name + "s")
+        ressources = getattr(self, ressource_name + "s")  # type: ignore
         for ressource in ressources:
             if ressource.lock:
                 continue
@@ -63,7 +63,7 @@ class Inventory:
         lock=True,
     ) -> list[IncrIdRessources]:
         returned_ressources = []
-        ressources = getattr(self, ressource_name + "s")
+        ressources = getattr(self, ressource_name + "s")  # type: ignore
         for ressource in ressources:
             if ressource.lock:
                 continue

@@ -9,7 +9,7 @@ from back.config import ApplicationConfig
 
 log = logging.getLogger(__name__)
 
-servers = []
+servers: list["MultiServer"] = []
 
 
 def cancel_all_tasks(exclude_current=False) -> None:
@@ -18,8 +18,8 @@ def cancel_all_tasks(exclude_current=False) -> None:
     TODO: find cleaner solution.
     """
     all_tasks = asyncio.all_tasks()
-    if exclude_current:
-        all_tasks.remove(asyncio.current_task())
+    if exclude_current and (current_task := asyncio.current_task()):
+        all_tasks.remove(current_task)
     for task in all_tasks:
         task.cancel()
 

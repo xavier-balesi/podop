@@ -8,9 +8,9 @@ log = logging.getLogger(__name__)
 
 
 class GameStatsMixin(TradingResourceGame):
-    def get_counts(self):
+    def get_counts(self) -> Counts:
         inventory = self._inventory
-        return Counts(
+        return Counts(  # type: ignore
             ts=scheduler.ts,
             foo=len(inventory.foos),
             bar=len(inventory.bars),
@@ -19,12 +19,12 @@ class GameStatsMixin(TradingResourceGame):
             money=inventory.money.value,
         )
 
-    def get_counts_history(self):
+    def get_counts_history(self) -> CountsHistory:
         counts_history: CountsHistory = CountsHistory()
         sorted_transactions = sorted(self._transactions, key=lambda t: t.ts)
         for transaction in sorted_transactions:
             if len(counts_history) == 0:
-                new_counts = Counts(ts=0, foo=0, bar=0, foobar=0, robot=0, money=0)
+                new_counts = Counts(ts=0, foo=0, bar=0, foobar=0, robot=0, money=0)  # type: ignore
                 new_counts.update(transaction)
                 counts_history.append(new_counts)
             else:

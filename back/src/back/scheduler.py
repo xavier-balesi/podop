@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import partial, wraps
 from heapq import heappop, heappush
+from typing import Any
 
 log = logging.getLogger(__name__)
 
@@ -25,20 +26,32 @@ class Scheduler:
     def __init__(self) -> None:
         self.ts = 0
         # heapq is not thread safe and then, more optimal than synchronisation queues (sync or async)
-        self._tasks = []
+        self._tasks: list[Task] = []
 
-    def scheduleabs(self, timestamp, action, *args, **kwargs) -> None:
+    def scheduleabs(
+        self,
+        timestamp: int,
+        action: Callable[..., Any],
+        *args,
+        **kwargs,
+    ) -> None:
         simplified_action = partial(action, *args, **kwargs)
         heappush(self._tasks, Task(start_ts=timestamp, action=simplified_action))
         log.debug(
             f"scheduling at {timestamp} action {action} with args={args} and kwargs={kwargs}",
         )
 
-    def schedule(self, delay, action, *args, **kwargs) -> None:
+    def schedule(
+        self,
+        delay: int,
+        action: Callable[..., Any],
+        *args,
+        **kwargs,
+    ) -> None:
         ts = self.ts + delay
         self.scheduleabs(ts, action, *args, **kwargs)
 
-    def set_timestamp(self, timestamp) -> None:
+    def set_timestamp(self, timestamp: int) -> None:
         # log.debug(f"now at {timestamp}")
         self.ts = timestamp
         while self._tasks and (action_ts := self._tasks[0].start_ts) <= self.ts:
@@ -46,7 +59,7 @@ class Scheduler:
             task: Task = heappop(self._tasks)
             task.action()
 
-    def jump(self, delay) -> None:
+    def jump(self, delay: int) -> None:
         ts = self.ts + delay
         self.set_timestamp(ts)
 
@@ -56,7 +69,7 @@ class Scheduler:
         self._tasks[:] = []
 
     @contextmanager
-    def from_timestamp_contextmanager(self, ts):
+    def from_timestamp_contextmanager(self, ts: int):
         """Permit to change the now timestamp with a contextmanager.
         so that child schedules do not depend on future time shifting.
         """
@@ -69,7 +82,7 @@ class Scheduler:
             # restore now timestamp
             self.ts = orig_ts
 
-    def from_timestamp_decorator(self, ts):
+    def from_timestamp_decorator(self, ts: int):
         """Permit to change the now timestamp with a decorator
         so that child schedules do not depend on future time shifting.
         """
