@@ -1,6 +1,9 @@
 site_name: foobartory
 repo_url: https://github.com/phptib/foobartory
 edit_uri: blob/main/back/docs
+# By default, we have URL like /api-guide/ intead of /api-guide.html,
+# but it's not compatible with static builds made by `mkdocs build`.
+use_directory_urls: false
 
 watch:
   - docs
@@ -37,7 +40,7 @@ theme:
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.top
-    - search.highlight
+#    - search.highlight
     - search.suggest
     - toc.follow
 
@@ -71,6 +74,7 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
+      # Slugify URL without only the tab title and not its identifier.
       slugify: !!python/object/apply:pymdownx.slugs.slugify
         kwds:
           case: lower
@@ -84,4 +88,3 @@ markdown_extensions:
   - pymdownx.tilde
   - toc:
       permalink: "¤"
-

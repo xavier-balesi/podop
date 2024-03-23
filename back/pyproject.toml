@@ -173,7 +173,8 @@ test = { shell = """
     echo "To open the HTML report:\npython -m webbrowser -t .coverage_reports/html-coverage-report/index.html"
 """, help = "Run the tests with pytest" }
 
-doc = { cmd = "mkdocs serve", help = "Start the dev server for doc preview" }
+doc = { cmd = "mkdocs serve {args}", help = "Start the dev server for doc preview" }
+release_doc = { cmd = "mkdocs build --strict {args}", help = "Build the doc statically" }
 
 ci = { composite = ["check", "test"], help = "Run the CI pipeline: check ➤ test" }
 
