@@ -20,7 +20,7 @@ api_config: ApiConfig = ApplicationConfig().api
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket) -> None:
-    """Start a new game.
+    """Start a new game by connecting to a websocket.
 
     The game runs as fast as possible. Eventually slow it down by using the `turn_interval` config.
     Spying the game by sampling the game resources at a given framerate (see `framerate` config).

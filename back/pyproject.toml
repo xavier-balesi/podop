@@ -17,7 +17,11 @@ requires-python = "==3.12.*"
 readme = "README.md"
 license = { text = "MIT" }
 
-
+[project.urls]
+homepage = "https://github.com/phptib/foobartory/"
+# TODO: provides doc url
+documentation = "https://readthedocs.org"
+repository = "https://github.com"
 
 [tool.pdm.dev-dependencies]
 check = [
@@ -32,6 +36,10 @@ test = [
     "pytest-asyncio>=0.23.4",
     "pytest-cov>=4.1.0",
 ]
+docs = [
+    "mkdocs-material>=9.5.14",
+    "mkdocstrings[python]>=0.24.1",
+]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -43,6 +51,9 @@ addopts = """
     --cov-report term-missing
     --cov-fail-under 80
 """
+
+[tool.coverage.run]
+parallel = true
 
 [tool.ruff]
 include = ["pyproject.toml", "src/**/*.py", "tests/**/*.py"]
@@ -119,15 +130,17 @@ init_typed = true
 warn_required_dynamic_aliases = true
 
 [tool.pdm.scripts]
+scripts = { cmd = "pdm run --list", help = "List available scripts (show this help)" }
+
 check = { shell = """
     ruff check {args}
     # Also check Cyclomatic Complexity and fail if >= rank D (more than moderate - more complex block).
     # Waiting for ruff integration: https://github.com/astral-sh/ruff/issues/2418
     flake8 --ignore E501 --radon-show-closures --radon-no-assert --radon-max-cc 21 ./src # ./tests
-""" }
+""", help = "Lint all the code (sources and tests)" }
 
 # Ignore flake8-errmsg that creates too much lines of code.
-check_all = { composite = ["check --select=ALL --ignore=EM101,EM102,EM103 src"] }
+check_all = { composite = ["check --select=ALL --ignore=EM101,EM102,EM103 src"], help="Lint only the sources, but with ALL the rules supported by ruff" }
 
 format = { shell = """
     if [ x{args} != x-f ]; then
@@ -139,20 +152,18 @@ format = { shell = """
     # Using black over "ruff format" to adjective line length.
     ruff format
     ruff check --unsafe-fixes --fix
-""" }
+""", help = "Format all the code (sources and tests)" }
 
-format_all = { composite = ["format", "check_all --unsafe-fixes --fix"] }
+format_all = { composite = ["format", "check_all --unsafe-fixes --fix"], help = "Try to fix all issues listed by check_all" }
 
-# A safe formatting intented to be called when saving the provided file with Ctrl+S.
 safe_format = { shell = """
     ruff format {args}
     ruff check --fix {args}
-""" }
+""", help = "A safe formatting intented to be called when saving the provided file with Ctrl+S" }
 
-# For retro compatibility.
-safe_reformat = { composite = ["safe_format"] }
+safe_reformat = { composite = ["safe_format"], help = "Alias for safe_format for the retro compatibility" }
 
-mypy = "mypy src"
+mypy = { cmd = "mypy src", help = "Run mypy in non strict mode" }
 
 test = { shell = """
     python -m tests {args}
@@ -160,10 +171,10 @@ test = { shell = """
     # Let Sonar handle it in the CI/CD => read comment in coverage-diff.sh to configure Sonar properly.
     bash -c '[ -v CI ] && exit 0 || ./tools/coverage-diff.sh'
     echo "To open the HTML report:\npython -m webbrowser -t .coverage_reports/html-coverage-report/index.html"
-""" }
+""", help = "Run the tests with pytest" }
 
-# Run the CI pipeline.
-ci = { composite = ["check", "test"] }
+doc = { cmd = "mkdocs serve", help = "Start the dev server for doc preview" }
 
-# Run the backend.
-back = "python -m back"
+ci = { composite = ["check", "test"], help = "Run the CI pipeline: check ➤ test" }
+
+back = { cmd = "python -m back", help = "Run the backend process" }
